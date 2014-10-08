@@ -189,7 +189,7 @@ end
 maxgtest = cat(3, gtest1, gtest2, gtest3, gtest4);
 
 
-mesh(X1,X2,max(maxgtest,[],3))
+contour(X2,X1,max(maxgtest,[],3))
 % Z = mvnpdf([xtest(i,:), u1, sig1);
 %     g2 = mvnpdf(xtest(i,:), u2, sig2);
 %     g3 = mvnpdf(xtest(i,:), u3, sig3);
