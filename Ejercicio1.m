@@ -26,12 +26,13 @@ x = randgauss1D(media, desvio, N);  % conjunto de números aleatorios
 [alturas, centros] = hist(x, 40);   % histograma sin normalizar
 ancho = centros(2) - centros(1);    % ancho de las barras del histograma
 area  = sum(ancho .* alturas);      % area de las barras del histograma
-bar(centros, alturas/area,'b');     % dibuja histograma normalizado
+fdpexp = alturas/area;              % fdp experimental
+bar(centros, fdpexp,'b');           % dibuja histograma normalizado
 % std(x)
 % mean(x)
 t = -7:0.01:13;                     
-pteorica = normpdf(t,media,desvio); % fdp teórica con igual media y desvio
-hold on; plot(t,pteorica,'--k','LineWidth',2.5); hold off;
+fdpteorica = normpdf(t,media,desvio); % fdp teórica con igual media y desvio
+hold on; plot(t,fdpteorica,'--k','LineWidth',2.5); hold off;
 title({'fdp de una distribución gaussiana unidimensional';
        sprintf('mu = %0.1f, sigma = %0.1f', media, desvio)})
 ylabel('p(x)'); xlabel('x');
@@ -52,71 +53,114 @@ dbtype randgauss1D.m
 
 
 
-%%  1.ii) $fdp$ gaussiana bidimensional no correlacionada;
+%%  1.ii y 1.iii) $fdp$ gaussiana bidimensional [no] correlacionada;
 
-N = 100000;      %
-media = [5 10];  % definición de fdp
-covar = [2 0;   %
-         0 1];  %
-     
-x = randgaussXD(media, covar, N);
+meds{1} = [50 100]; % 
+covs{1} = [2 0;     % definición de fdp no correlacionada
+           0 1];    %
+titulos{1} = 'fdp de una distribución gaussiana bidimensional no correlacionada';
+        
+meds{2} = [50 100]; % 
+covs{2} = [2 1;     % definición de fdp correlacionada
+           1 1];    %
+titulos{2} = 'fdp de una distribución gaussiana bidimensional correlacionada';
+       
+% Realizo la misma comparacion para los dos casos
+for k = 1:2
+media = meds{k};
+covar = covs{k};
+titulo = titulos{k};
+figure
+suptitle({titulo; sprintf(['mu = [%0.0f %0.0f], '...
+                           'sigma = [%0.0f %0.0f; %0.0f %0.0f]'],...
+                          media, covar)})
 
-[alturas, centros] = hist3(x,[30 30]);
-ancho1 = centros{1}(2) - centros{1}(1);
-ancho2 = centros{2}(2) - centros{2}(1);
-volumen = sum(ancho1 * sum(ancho2 * alturas));
-[xx, yy] = meshgrid(centros{1},centros{2});
-% bar3(xx, alturas)
-% surface(xx,yy,alturas ./ volumen); axis tight
-% colormap winter
+N = 10000;                         % cantidad de muestras
+x = randgaussXD(media, covar, N);  % conjunto de números aleatorios
 
-contour3(centros{1},centros{2},alturas./ volumen,15)
-% ylabel('x_2'); xlabel('x_1'); zlabel('p(x_1,x_2)');
+[alturas, centros] = hist3(x,[15 15]);          % histograma sin normalizar
+ancho1 = centros{1}(2) - centros{1}(1);         % ancho de las barras en x1
+ancho2 = centros{2}(2) - centros{2}(1);         % ancho de las barras en x2
+volumen = sum(ancho1 * sum(ancho2 * alturas));  % volumen de las barras
+fdpexp = alturas ./ volumen;                    % fdp experimental
 
-NN = 100;
-t1 = linspace(-5,15,NN);
-t2 = linspace(0,20,NN);
+subplot(1,2,1);                      % grafica de la malla y teorica en 3D
+mesh(centros{1},centros{2},fdpexp'); % mesh necesita la matriz traspuesta
 
+% Contour plot de la fdp experimental
+% hold on; contour3(centros{1},centros{2},0.01+fdpexp','k-'); hold off
+
+% comparacion con fdp teorica
+NN = 100; 
+t1 = linspace(44,56,NN); t2 = linspace(96,104,NN);
+fdpteorica = zeros(NN);
 for i = 1:NN
     for j = 1:NN
-        pteorica(i,j) = mvnpdf([t1(i) t2(j)],media,covar);
+        fdpteorica(i,j) = mvnpdf([t1(i) t2(j)],media,covar);
     end
 end
-hold on
-contour3(t1,t2,pteorica,15,'k')
+hold on; contour3(t1,t2,0.005+fdpteorica','r-'); hold off
+
+% colormap copper;    % cambia los colores de la malla
+axis tight;
+daspect([max(daspect)*[1 1] 2]);% relacion de aspecto en x1 y x2
 ylabel('x_2'); xlabel('x_1'); zlabel('p(x_1,x_2)');
-hold off
-% t = -7:0.01:13;                     
-% pteorica = normpdf(t,media,desvio); % fdp teórica con igual media y desvio
-% hold on; plot(t,pteorica,'--k','LineWidth',2.5); hold off;
-% title({'fdp de una distribución gaussiana unidimensional';
-%        sprintf('mu = %0.1f, sigma = %0.1f', media, desvio)})
-% ylabel('p(x)'); xlabel('x');
-% legend('fdp experimental','fdp teorica')
+legend('fdp experimental','fdp teorica', 'Location','West')
+title('Superficies de nivel')
 
+% curvas de nivel de la teorica y la experimental
+subplot(1,2,2); 
+% contour necesita la matriz traspuesta
+contour(centros{1},centros{2},fdpexp',7,'k');            % fdp experimental
+hold on; contour(t1,t2,0.01+fdpteorica',7,'r'); hold off % fdp teorica
+axis equal; axis([44 56 96 104]);
+% daspect([max(daspect)*[1 1] 1]);     % relacion de aspecto en x1 y x2
+ylabel('x_2'); xlabel('x_1');
+title('Curvas de nivel')
+legend('fdp experimental','fdp teorica')
 
-%% randgauss2D.m
-dbtype randgauss2D.m
+end
 
 %%
-% 
-% 2. Compruebe numéricamente el teorema del límite central mediante la suma
+% Para normalizar el histograma se dividió por la suma total de los volúmenes 
+% de todos los prismas, análogo al caso unidimensional donde se 
+% sumaron las áreas de los rectángulos.
+% Para la comparación gráfica con la distribución teórica se utilizaron superficies
+% y curvas de nivel. En ambos casos se comprobó el parecido entre ambas pdf.
+%
+% Debajo se muestra el código de las dos funciones propias utilizadas para generar 
+% los conjuntos de números. |mvrandgauss.m| utiliza |randgauss.m| como punto de partida
+% he incluye la demostración del funcionamiento dentro de su código.
+
+%% mvrandgauss.m
+dbtype mvrandgauss.m
+
+%% randgaussXD.m
+dbtype randgaussXD.m
+
+
+%% 2. 
+% Compruebe numéricamente el teorema del límite central mediante la suma
 % de números aleatorios con distribución uniforme.
 
-% N = 10000;
-% figure
-% for i = 1:4
-%     N =[1 2 4 40];
-%     for n= 1:N
-%         suma(n) = sum(2* rand(1,N(i)) - 1) ./ (0.5*N(i));
-%     end
-%     
+repeticiones = 10000;
+N = 1:40;%[1 2 4 40];
+figure
+
+for n = 1:length(N)
+    for r= 1:repeticiones
+        % suma de N números aleatorios en [-1, +1]
+        promedio(r) = (1/N(n)) * sum(rand(1,N(n)));
+    end
+    
 %     subplot(2,2,i)
-%     hist(suma,40)
+%     hist(promedio,40)
 %     title(['N=' num2str(N(i))])
-% end
+    
+    evolucion(i,:) = [mean(promedio), std(promedio)];
+end
 
-
+plot(N,evolucion(:,1),N,evolucion(:,2));
 %%
 % 
 % 3. Compruebe numéricamente el teorema del límite central mediante la suma

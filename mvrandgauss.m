@@ -23,6 +23,10 @@ triangSup = chol(SIGMA); % SIGMA = triangSup' * triangSup
 % z es un número aleatorio normal estándar de tamaño 1 x D
 z = randgauss1D(0,1,D)';  % E[z' * z] = I
 
+x = z * triangSup + MU;
+
+% Demostración de que la expresión anterior devuelve el resultado esperado
+% -------------------------------------------------------------------------
 % Si se toma x = z * triangSup se cumple que:
 % E[x' * x] = E[(z * triangSup)' * (z * triangSup)]
 %           = E[ triangSup' * z' * z * triangSup ]
@@ -30,8 +34,7 @@ z = randgauss1D(0,1,D)';  % E[z' * z] = I
 %           = triangSup' * I * triangSup
 %           = triangSup' * triangSup
 %           = SIGMA
-% Entonces z * triangSup cumple con la matriz de covarianza dada
-
-x = z * triangSup + MU; % Por último desplazo la distribucion con MU
+% Entonces z * triangSup cumple con la matriz de covarianza dada SIGMA
+% Por último desplazo la distribucion con MU sin alterar  E[x' * x]
 
 end
