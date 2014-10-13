@@ -1,19 +1,20 @@
-function x = randgaussXD(MU, SIGMA)
-%RANDGAUSSIANXD genera un numero aleatorio de dimension dim con 
-%distribucion gaussiana multidimensional de vector vertical de media mu y 
-%matriz de covarianza sigma. Los valores por defecto son mu =
-%0, sigma = 1 y N = 1.
+function x = randgaussXD(MU, SIGMA, N)
+%RANDGAUSSXD(MU, SIGMA, N) genera un conjunto de números aleatorios de 
+% dimension D provenientes de una distribucion gaussiana multidimensional, 
+% cuyas medias quedan definidas por el vector MU (horizontal, de tamaño 
+% D x 1), la matriz de covarianza SIGMA (cuadrada, de tamaño D x D) y la
+% cantidad de numeros N (1 por defecto). 
+% x es de tamaño N x D, donde cada número de dimensión D se ubica por
+% renglón.
 
-if nargin < 1
-    MU = 0;
-end
-if nargin < 2
-    SIGMA = 1;
+if nargin < 3
+    N = 1;     % tamaño por defecto
 end
 
-triangSup = chol(SIGMA);
-z = randgauss1D(0,1,size(SIGMA,1));
-z = z'; % para que sea horizontal y multiplicarlo por la matriz triangSup
-x = z * triangSup + MU;
+x = zeros(N,length(MU)); % inicializo
+for n = 1:N
+    x(n,:) = mvrandgauss(MU, SIGMA); % Conjunto de números aleatorios
+end
+
 end
 
