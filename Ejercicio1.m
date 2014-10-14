@@ -166,7 +166,17 @@ for n = 1:length(N)
 end
  
 plot(N,evolucion);
-%%
-% 
-% 3. Compruebe numéricamente el teorema del límite central mediante la suma
+
+
+
+%% 3. 
+% Compruebe numéricamente el teorema del límite central mediante la suma
 % de números aleatorios con distribución uniforme.
+
+media = 0;
+desvio = 1;
+xgauss = media + desvio*randn(1000,1);
+
+HgaussTeorica  = 0.5 * (1 + log(2*pi*desvio.^2) )
+HgaussEmpirica = shanentropy(xgauss)
+

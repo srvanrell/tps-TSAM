@@ -2,17 +2,18 @@
 % Análisis estadístico de datos - PCA.
 clc; close all; clear all;
 
-N = 100;
-S = zeros(3,N);
-for n =1:N
-    S(:,n) = mvnrnd([0; 0; 0],[1.5 2 0; 2 4 0; 0 0 3])';
-end
+N = 1000;
+
+gauss1 = randgauss1D(1, 2, N);
+gauss2 = randgauss1D(3, 4, N);
+
+S = horzcat(gauss1,gauss2);
 
 % Matriz de mezcla
 A = [ 1 1;
-     -1 1];
+     1 1];
 
-scatter(S(1,:), S(2,:))
+scatter(S(:,1), S(:,2))
 axis equal
 
 % acp(S)
