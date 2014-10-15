@@ -170,13 +170,36 @@ plot(N,evolucion);
 
 
 %% 3. 
-% Compruebe numéricamente el teorema del límite central mediante la suma
-% de números aleatorios con distribución uniforme.
+% Estime numéricamente ...
+
+N=100;
 
 media = 0;
 desvio = 1;
-xgauss = media + desvio*randn(1000,1);
+xgauss = media + desvio*randn(N,1);
 
 HgaussTeorica  = 0.5 * (1 + log(2*pi*desvio.^2) )
-HgaussEmpirica = shanentropy(xgauss)
+HgaussEmpirica1 = shanentropy(xgauss)
+HgaussEmpirica2 = histentropy(xgauss)
+HgaussEmpirica3 = entropia(xgauss',[-3, 3, 30])
 
+
+
+ini = -1;
+fin =  3;
+xunif = ini + (fin - ini) .* rand(N,1);
+
+HunifTeorica  = log(fin - ini)
+HunifEmpirica1 = shanentropy(xunif)
+HunifEmpirica2 = histentropy(xunif)
+HunifEmpirica3 = entropia(xunif',[-1, 3, 30])
+
+
+media = 5;
+beta  = 2;
+xlap  = randlap(N,media,beta);
+
+HlapTeorica  = 1 + log(2*beta)
+HlapEmpirica1 = shanentropy(xlap)
+HlapEmpirica2 = histentropy(xlap)
+HlapEmpirica3 = entropia(xlap',[-10, 10, 30])
