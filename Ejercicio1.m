@@ -153,28 +153,30 @@ dbtype randgaussXD.m
 % de números aleatorios con distribución uniforme.
 
 repeticiones = 10000;
-N = 1:40;%[1 2 4 40];
-figure
-evolucion = zeros(length(N),4);
+N = 1:10;%[1 2 4 40];
+
+% evolucion = zeros(length(N),4);
+promedio = zeros(1,repeticiones) ;
 for n = 1:length(N)
-    for r= 1:repeticiones
+    for r = 1:repeticiones
         % suma de N números aleatorios en [-1, +1]
         promedio(r) = (1/N(n)) * sum(rand(1,N(n)));
     end
     
-%     qqplot(promedio)
-%     pause
+    qqplot(promedio)
+    pause
 %     subplot(2,2,i)
-%     hist(promedio,40)
-%     title(['N=' num2str(N(i))])
+%      figure
+%      hist(promedio,40)
+%      title(['N=' num2str(N(n))])
     % Guardo valores estimados y los teoricos
     % meadia de distribucion uniforme 
-    puntaje = kstest( (promedio-0.5) /  sqrt(1/(12*N(n))) );
-    puntaje2 = jbtest(promedio, 0.01);
-    evolucion(n,:) = [mean(promedio), std(promedio), puntaje, puntaje2];
+%     puntaje = kstest( (promedio-0.5) /  sqrt(1/(12*N(n))) );
+%     puntaje2 = jbtest(promedio, 0.01);
+%     evolucion(n,:) = [mean(promedio), std(promedio), puntaje, puntaje2];
 end
  
-plot(N,evolucion);
+% plot(N,evolucion);
 
 
 
