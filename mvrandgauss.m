@@ -1,6 +1,6 @@
 function x = mvrandgauss(MU, SIGMA)
-%MVRANDGAUSS genera un número aleatorio de dimension D proveniente de una 
-% distribucion gaussiana multidimensional, cuyas medias quedan definidas
+%MVRANDGAUSS genera un número aleatorio de dimensión D proveniente de una 
+% distribución gaussiana multidimensional cuyas medias quedan definidas
 % por el vector MU (horizontal, de tamaño D x 1) y la matriz de covarianza 
 % SIGMA (cuadrada, de tamaño D x D)
 % Los valores por defecto son MU = 0 y SIGMA = matriz identidad.
@@ -35,6 +35,6 @@ x = z * triangSup + MU;
 %           = triangSup' * triangSup
 %           = SIGMA
 % Entonces z * triangSup cumple con la matriz de covarianza dada SIGMA
-% Por último desplazo la distribucion con MU sin alterar  E[x' * x]
+% Por último desplazo la distribución con MU sin alterar  E[x' * x]
 
 end

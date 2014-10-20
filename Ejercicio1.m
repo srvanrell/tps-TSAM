@@ -4,21 +4,23 @@
 % función de densidad de probabilidad ($fdp$) gaussiana 
 % $\mathcal{N}(\mathbf{\mu},\mathbf{\Sigma})) en $d$ dimensiones:
 %
+
 clc; close all; clear all;
+
 %% 1. 
 % Para cada uno de los siguientes casos: i) $fdp$ gaussiana 
-% unidimensional; ii) $fdp$ gaussiana bidimensional no correlacionada y 
+% unidimensional, ii) $fdp$ gaussiana bidimensional no correlacionada y 
 % iii) $fdp$ gaussiana bidimensional correlacionada,
 %  
 % * Genere un conjunto de números aleatorios con esa $fdp$.
 % * Estime la $fdp$ experimental mediante un histrograma normalizado.
-% * Compare graficamente la estimación obtenida con la fdp teórica.
+% * Compare gráficamente la estimación obtenida con la fdp teórica.
 
 
 %% 1.i) $fdp$ gaussiana unidimensional
 
 N      = 5000;  %
-media  = 3;     % definición de fdp
+media  = 3;     % definición de la fdp
 desvio = 2;     %
 
 x = randgauss1D(media, desvio, N);  % conjunto de números aleatorios
@@ -27,12 +29,13 @@ x = randgauss1D(media, desvio, N);  % conjunto de números aleatorios
 ancho = centros(2) - centros(1);    % ancho de las barras del histograma
 area  = sum(ancho .* alturas);      % area de las barras del histograma
 fdpexp = alturas/area;              % fdp experimental
-bar(centros, fdpexp,'b');           % dibuja histograma normalizado
-% std(x)
-% mean(x)
+bar(centros, fdpexp,'w');           % dibuja histograma normalizado
+
+% Comparación con la fdp teórica
 t = -7:0.01:13;                     
-fdpteorica = normpdf(t,media,desvio); % fdp teórica con igual media y desvio
-hold on; plot(t,fdpteorica,'--k','LineWidth',2.5); hold off;
+fdpteor = normpdf(t,media,desvio); % fdp teórica con igual media y desvio
+hold on; plot(t,fdpteor,'-k','LineWidth',2); hold off;
+
 title({'fdp de una distribución gaussiana unidimensional';
        sprintf('mu = %0.1f, sigma = %0.1f', media, desvio)})
 ylabel('p(x)'); xlabel('x');
@@ -41,9 +44,11 @@ legend('fdp experimental','fdp teorica')
 %%
 % Para normalizar el histograma se dividió por la suma de las áreas de 
 % los rectángulos dado que la integral de una $fdp$ debe dar 1, aún en este
-% caso donde es empírica la $fdp$. En la comparación gráfica con la teórica 
-% se verifica su correspondencia.
-% Debajo se muestra el código de las dos funciones propias utilizadas.
+% caso donde la $fdp$ es empírica. En la comparación gráfica se verifica la
+% correspondencia con la $fdp$ teórica.
+% 
+% Debajo se muestra el código de las dos funciones utilizadas para generar
+% números aleatorios de una distribución normal unidimensional.
 
 %% randgauss.m
 dbtype randgauss.m
@@ -58,14 +63,16 @@ dbtype randgauss1D.m
 meds{1} = [50 100]; % 
 covs{1} = [2 0;     % definición de fdp no correlacionada
            0 1];    %
-titulos{1} = 'fdp de una distribución gaussiana bidimensional no correlacionada';
+titulos{1} = ['fdp de una distribución gaussiana bidimensional no ' ... 
+              'correlacionada'];
         
 meds{2} = [50 100]; % 
 covs{2} = [2 1;     % definición de fdp correlacionada
            1 1];    %
-titulos{2} = 'fdp de una distribución gaussiana bidimensional correlacionada';
+titulos{2} = ['fdp de una distribución gaussiana bidimensional ' ...
+              'correlacionada'];
        
-% Realizo la misma comparacion para los dos casos
+% Realizo la misma comparacion para los casos ii) y iii)
 for k = 1:2
 media = meds{k};
 covar = covs{k};
@@ -90,31 +97,30 @@ mesh(centros{1},centros{2},fdpexp'); % mesh necesita la matriz traspuesta
 % Contour plot de la fdp experimental
 % hold on; contour3(centros{1},centros{2},0.01+fdpexp','k-'); hold off
 
-% comparacion con fdp teorica
+% comparacion con la fdp teorica
 NN = 100; 
 t1 = linspace(44,56,NN); t2 = linspace(96,104,NN);
-fdpteorica = zeros(NN);
+fdpteor = zeros(NN);
 for i = 1:NN
     for j = 1:NN
-        fdpteorica(i,j) = mvnpdf([t1(i) t2(j)],media,covar);
+        fdpteor(i,j) = mvnpdf([t1(i) t2(j)],media,covar);
     end
 end
-hold on; contour3(t1,t2,0.005+fdpteorica','r-'); hold off
-
-% colormap copper;    % cambia los colores de la malla
+hold on; contour3(t1,t2,0.005+fdpteor','r-'); hold off
 axis tight;
 daspect([max(daspect)*[1 1] 2]);% relacion de aspecto en x1 y x2
+
 ylabel('x_2'); xlabel('x_1'); zlabel('p(x_1,x_2)');
 legend('fdp experimental','fdp teorica', 'Location','West')
-title('Superficies de nivel')
+title('Superficie de nivel')
 
 % curvas de nivel de la teorica y la experimental
 subplot(1,2,2); 
 % contour necesita la matriz traspuesta
-contour(centros{1},centros{2},fdpexp',7,'k');            % fdp experimental
-hold on; contour(t1,t2,0.01+fdpteorica',7,'r'); hold off % fdp teorica
+contour(centros{1},centros{2},fdpexp',7,'k');         % fdp experimental
+hold on; contour(t1,t2,0.01+fdpteor',7,'r'); hold off % fdp teorica
 axis equal; axis([44 56 96 104]);
-% daspect([max(daspect)*[1 1] 1]);     % relacion de aspecto en x1 y x2
+
 ylabel('x_2'); xlabel('x_1');
 title('Curvas de nivel')
 legend('fdp experimental','fdp teorica')
@@ -122,15 +128,18 @@ legend('fdp experimental','fdp teorica')
 end
 
 %%
-% Para normalizar el histograma se dividió por la suma total de los volúmenes 
-% de todos los prismas, análogo al caso unidimensional donde se 
-% sumaron las áreas de los rectángulos.
-% Para la comparación gráfica con la distribución teórica se utilizaron superficies
-% y curvas de nivel. En ambos casos se comprobó el parecido entre ambas pdf.
+% Para normalizar el histograma se dividió por la suma total de los 
+% volúmenes de todos los prismas, análogo al caso unidimensional donde se 
+% sumaron las áreas de las barras.
 %
-% Debajo se muestra el código de las dos funciones propias utilizadas para generar 
-% los conjuntos de números. |mvrandgauss.m| utiliza |randgauss.m| como punto de partida
-% he incluye la demostración del funcionamiento dentro de su código.
+% Para la comparación gráfica con la distribución teórica se utilizaron 
+% superficies y curvas de nivel. En ambos casos se comprobó el parecido 
+% entre la $pdf$ teórica y experimental.
+%
+% Debajo se muestra el código de las dos funciones utilizadas para generar 
+% los conjuntos de números de una distribución normal bidimensional. 
+% |mvrandgauss.m| utiliza |randgauss.m| como punto de partida e incluye la 
+% demostración del funcionamiento dentro de su código.
 
 %% mvrandgauss.m
 dbtype mvrandgauss.m
