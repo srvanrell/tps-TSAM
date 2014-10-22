@@ -35,11 +35,11 @@
             {subcaption}
             
 % -- Incorporar imágenes de Matlab --
-%\usepackage{pgfplots}
-%\pgfplotsset{compat=newest} 
-%\pgfplotsset{plot coordinates/math parser=false}
-%%\usepackage{tikz}
-%\usetikzlibrary{plotmarks} % para plotear las graficas que vienen de Matlab
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} 
+\pgfplotsset{plot coordinates/math parser=false}
+\usepackage{tikz}
+\usetikzlibrary{plotmarks} % para plotear las graficas que vienen de Matlab
             
 %---------------------------------------------------------------------------------
 % DEPRECATED COMMANDS
@@ -55,8 +55,8 @@
 
 
 \author{Sebastián R. Vanrell\\[3em]}
-\title{\textsf{\Large Tópicos Selectos en Aprendizaje Maquinal}\\\bigskip
-       \textsf{\Large Guía de Trabajos Prácticos Nº1}\\\bigskip
+\title{{\Large Tópicos Selectos en Aprendizaje Maquinal}\\[3em]
+       \textsf{Guía de Trabajos Prácticos Nº1}\\\bigskip
        \textsf{Algoritmos para Reconocimiento de Patrones}\\[3em]}
 \date{Doctorado en Ingeniería\\\bigskip
       Facultad de Ingeniería y Ciencias Hídricas\\\bigskip
@@ -77,7 +77,54 @@
 
 \newpage
 
-\section{Ejercicio 4}
+\section{Ejercicio 2}
+
+Clasificación estadística de patrones.
+
+\subsection{Ejercicio 2.1}
+
+Sea un clasificador geométrico lineal definido por:
+\begin{itemize}
+\item $g_1(\mathbf{x}) = - x_1$ 
+\item $g_2(\mathbf{x}) = x_1 + x_2 - 1$
+\item $g_3(\mathbf{x}) = x_1 - x_2 - 1$
+\end{itemize}
+\begin{enumerate}
+\item[a)] Calcule y grafique las fronteras y regiones de decisión.
+\end{enumerate}
+
+Para calcular las fronteras de decisión desarrollo las siguientes inecuaciones:
+\begin{align*}
+g_1(\mathbf{x}) &> g_2(\mathbf{x})   &  g_1(\mathbf{x}) &> g_3(\mathbf{x})  &  g_2(\mathbf{x}) &> g_3(\mathbf{x}) \\
+- x_1           &> x_1 + x_2 - 1     &  - x_1           &> x_1 - x_2 - 1    &  x_1 + x_2 - 1   &> x_1 - x_2 - 1   \\
+  x_2           &< - 2 x_1 + 1       &  x_2             &> 2 x_1 + 1        &  x_2             &> 0
+\end{align*}
+
+Para graficar las regiones de decisión (Figura \ref{ejercicio21}) considero que:
+\begin{itemize}
+\item $\mathbf{x} \in C_1 \;\; \mathrm{si} \;\; [g_1(\mathbf{x}) > g_2(\mathbf{x})] \wedge  [g_1(\mathbf{x}) > g_3(\mathbf{x})]$
+
+\item $\mathbf{x} \in C_2 \;\; \mathrm{si} \;\; [g_2(\mathbf{x}) > g_1(\mathbf{x})] \wedge  [g_2(\mathbf{x}) > g_3(\mathbf{x})]$
+
+\item $\mathbf{x} \in C_3 \;\; \mathrm{si} \;\; [g_3(\mathbf{x}) > g_1(\mathbf{x})] \wedge  [g_3(\mathbf{x}) > g_2(\mathbf{x})]$
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=.8\textwidth]{ejercicio21}
+	\caption{Regiones y fronteras del clasificador geométrico lineal.}
+	\label{ejercicio21}
+\end{figure}
+
+\begin{enumerate}
+\item[b)] Clasifique los puntos (2,1); (2,-1); (-1,1); (-1,-1).
+\begin{itemize}
+\item $\mathrm{p_1}:\; (2,1) \in C_2$
+\item $\mathrm{p_2}:\; (2,-1) \in C_3$
+\item $\mathrm{p_3}:\; (-1,1) \in C_1$
+\item $\mathrm{p_4}:\; (-1,-1) \in C_1$
+\end{itemize}
+\end{enumerate}
 
 %\begin{par}
 %Considere el sistema $H(z)=\frac{1-2z^{-1}+2z^{-2}-z^{-3}}{(1-z^{-1})(1-0.5z^{-2})(1-0.2z^{-3})}$
