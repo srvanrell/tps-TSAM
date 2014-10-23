@@ -2,18 +2,141 @@
 % Análisis estadístico de datos - PCA.
 clc; close all; clear all;
 
+
+%% 1
+% Implemente el algoritmo de PCA.
+%
+% Debajo se copia el código fuente de la función implementada. La
+% descripción de la misma se encuentra dentro del mismo código.
+
+%% mipca.m
+dbtype mipca.m
+
+%% 2
+% Escriba un programa que le permita generar datos aleatorios $\mathbf(x)$
+% a partir del siguiente modelo generativo lineal: 
+% $\mathbf(x) = \mathbf(A) \mathbf(s)$, donde $\mathbf(s)$ es el vector de
+% fuentes (aleatorio) y $\mathbf(A)$ es la matriz de mezcla.
+
+%% mezclar.m
+dbtype mezclar.m
+
+%% 3
+% A partir de datos de dos mezclas, obtenidos mediante dos fuentes y una
+% matriz de mezcla aleatoria, utilice PCA para lo siguiente:
+% 
+% # Pruebe con fuentes con distribución gaussiana y laplaciana, para
+% matrices de mezcla con columnas ortogonales y no ortogonales.
+% # Para cada caso de los anteriores y cada etapa (fuentes, mezclas,
+% señales separadas) dibuje un gráfico de dispersión de las variables.
+% # Luego de la separación obtenga la matriz $\mathbf{W}$ correspondiente.
+
 N = 1000;
 
-gauss1 = randgauss1D(1, 2, N);
-gauss2 = randgauss1D(3, 4, N);
+% Fuentes gaussianas y laplacianas 
+s{1} = randgauss1D(1, 1, N)'; 
+s{2} = randgauss1D(3, 3, N)';
+s{3} = randlap(N, 2 ,2)';
+s{4} = randlap(N, 5 ,0.9)';
 
-S = horzcat(gauss1,gauss2);
+% Matrices de mezcla
+A{1} = repmat(1+2*rand(1,2),2,1) .* sign(rand(2)-0.5);  % Mezcla ortogonal
+A{2} = (1+2*rand(2)) .* sign(rand(2)-0.5);  % Mezcla no ortogonal
+titort{1} = 'ortogonales';
+titort{2} = 'no ortogonales';
+suptit{1} = 'Fuentes gaussianas';
+suptit{2} = 'Fuentes laplacianas';
 
-% Matriz de mezcla
-A = [ 1 1;
-     1 1];
+for ss = 1:2
+    figure
+    for aa = 1:2
+        X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
+        
+        W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
+                      % componentes principales
+        
+        Y = W * X; % Proyecto los datos sobre las direcciones principales
+        
+        subplot(2,3,1+3*(aa-1))
+        scatter(s{2*ss-1}, s{2*ss}); axis equal;
+        title({'Fuentes';['columnas ' titort{aa}]} )
+        xlabel('s_1'); ylabel('s_2');
+        
+        subplot(2,3,2+3*(aa-1))
+        scatter(X(1,:), X(2,:)); axis equal;
+        hold on; 
+        x1m = mean(X(1,:));
+        x2m = mean(X(2,:));
+        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
+        plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
+        hold off
+        title({'Mezclas';['columnas ' titort{aa}]} )
+        xlabel('x_1'); ylabel('x_2');
+        
+        subplot(2,3,3+3*(aa-1))
+        scatter(Y(1,:), Y(2,:)); axis equal;
+        title({'Señales separadas';['columnas ' titort{aa}]} )
+        xlabel('y_1'); ylabel('y_2');
+        
+        A{aa}
+        inv(A{aa})
+        W
+    end
+    suptitle(suptit{ss})
+end
 
-scatter(S(:,1), S(:,2))
-axis equal
+%%
+% # ¿La matriz de separación $\mathbf{W}$ es la inversa de la matriz de 
+% mezcla $\mathbf{A}$ utilizada?
+%
+% Si la matriz de separación $\mathbf{W}$ fuera la inversa de la matriz de
+% mezcla entonces con PCA se podría recuperar las fuentes originales,
+% porque $\mathbf{y} = \mathbf{W} \mathbf{x} = \mathbf{W} \mathbf{A} \mathbf{s}$
+% Dada cualquier matriz de mezcla \mathbf{A} su inversa no es \mathbf{W}.
+% Esto se corrobora en las pruebas realizadas anteriormente. 
+% En algunos casos la distribución de las señales recuperadas se asemejan a
+% las distribuciones de las fuentes originales, pero las escalas y medias 
+% no coincidan.
 
-% acp(S)
+
+%%
+% # ¿Cómo se afecta este resultado si agrega una componente de ruido 
+% gaussiano al modelo generativo?
+
+for ss = 1:2
+    figure
+    for aa = 1:2
+        X = mezclarconruido(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
+        
+        W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
+                      % componentes principales
+        
+        Y = W * X; % Proyecto los datos sobre las direcciones principales
+        
+        subplot(2,3,1+3*(aa-1))
+        scatter(s{2*ss-1}, s{2*ss}); axis equal;
+        title({'Fuentes';['columnas ' titort{aa}]} )
+        xlabel('s_1'); ylabel('s_2');
+        
+        subplot(2,3,2+3*(aa-1))
+        scatter(X(1,:), X(2,:)); axis equal;
+        hold on; 
+        x1m = mean(X(1,:));
+        x2m = mean(X(2,:));
+        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
+        plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
+        hold off
+        title({'Mezclas';['columnas ' titort{aa}]} )
+        xlabel('x_1'); ylabel('x_2');
+        
+        subplot(2,3,3+3*(aa-1))
+        scatter(Y(1,:), Y(2,:)); axis equal;
+        title({'Señales separadas';['columnas ' titort{aa}]} )
+        xlabel('y_1'); ylabel('y_2');
+        
+        A{aa}
+        inv(A{aa})
+        W
+    end
+    suptitle(suptit{ss})
+end
