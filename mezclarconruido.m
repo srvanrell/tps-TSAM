@@ -11,6 +11,6 @@ if size(s2,1) ~= 1
 end
 
 S = vertcat(s1,s2);
-X = A * S + (2*rand(size(S))-1);
+X = A * S + (3*rand(size(S))-1);
 end
 

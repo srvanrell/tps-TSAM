@@ -40,8 +40,13 @@ s{3} = randlap(N, 2 ,2)';
 s{4} = randlap(N, 5 ,0.9)';
 
 % Matrices de mezcla
-A{1} = repmat(1+2*rand(1,2),2,1) .* sign(rand(2)-0.5);  % Mezcla ortogonal
-A{2} = (1+2*rand(2)) .* sign(rand(2)-0.5);  % Mezcla no ortogonal
+signos = ones(2);
+while signos(1,:) == signos(2,:)
+    signos = sign(rand(2)-0.5);
+end
+signos = [1 1; 1 -1];
+A{1} = repmat(2*rand(1,2)-1,2,1) .* signos;  % Mezcla ortogonal
+A{2} = (2*rand(2)-1) .* signos;  % Mezcla no ortogonal
 titort{1} = 'ortogonales';
 titort{2} = 'no ortogonales';
 suptit{1} = 'Fuentes gaussianas';
@@ -86,18 +91,24 @@ for ss = 1:2
 end
 
 %%
+% En las gráficas se muestra cada una de las etapas requeridas. En las
+% gráficas de las mezclas 
+
+%%
 % # ¿La matriz de separación $\mathbf{W}$ es la inversa de la matriz de 
 % mezcla $\mathbf{A}$ utilizada?
 %
+% Para responder a la pregunta desarrollo la siguiente expresión:
+%
+% $\mathbf{y} = \mathbf{W} \mathbf{x} = \mathbf{W} \mathbf{A} \mathbf{s}$
+%
 % Si la matriz de separación $\mathbf{W}$ fuera la inversa de la matriz de
-% mezcla entonces con PCA se podría recuperar las fuentes originales,
-% porque $\mathbf{y} = \mathbf{W} \mathbf{x} = \mathbf{W} \mathbf{A} \mathbf{s}$
-% Dada cualquier matriz de mezcla \mathbf{A} su inversa no es \mathbf{W}.
-% Esto se corrobora en las pruebas realizadas anteriormente. 
-% En algunos casos la distribución de las señales recuperadas se asemejan a
-% las distribuciones de las fuentes originales, pero las escalas y medias 
-% no coincidan.
-
+% mezcla $\mathbf{A}$ entonces utilizando PCA se podría recuperar las 
+% fuentes.
+% Sin embargo, en las pruebas anteriores no se corrobora que \mathbf{W} sea
+% la inversa de \mathbf{A}. En algunos casos las distribuciones de las 
+% señales recuperadas se asemejan pero no conservan las mismas escalas, 
+% las orientaciones y las medias originales.
 
 %%
 % # ¿Cómo se afecta este resultado si agrega una componente de ruido 
