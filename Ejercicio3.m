@@ -39,12 +39,12 @@ s{2} = randgauss1D(3, 3, N)';
 s{3} = randlap(N, 2 ,2)';
 s{4} = randlap(N, 5 ,0.9)';
 
-% Matrices de mezcla
+% Se corroboran los signos para impedir que las mezclas sean iguales
 signos = ones(2);
-while signos(1,:) == signos(2,:)
+while isequal(signos(1,:),signos(2,:)) || isequal(signos(1,:), -signos(2,:))
     signos = sign(rand(2)-0.5);
 end
-signos = [1 1; 1 -1];
+% Generacacion de las matrices de mezcla
 A{1} = repmat(2*rand(1,2)-1,2,1) .* signos;  % Mezcla ortogonal
 A{2} = (2*rand(2)-1) .* signos;  % Mezcla no ortogonal
 titort{1} = 'ortogonales';
@@ -104,11 +104,13 @@ end
 %
 % Si la matriz de separación $\mathbf{W}$ fuera la inversa de la matriz de
 % mezcla $\mathbf{A}$ entonces utilizando PCA se podría recuperar las 
-% fuentes.
+% fuentes. 
 % Sin embargo, en las pruebas anteriores no se corrobora que \mathbf{W} sea
 % la inversa de \mathbf{A}. En algunos casos las distribuciones de las 
 % señales recuperadas se asemejan pero no conservan las mismas escalas, 
 % las orientaciones y las medias originales.
+% También es esperable que no pueda ser la inversa porque las señales 
+% obtenidas por PCA pueden estar en distinto orden a las fuentes
 
 %%
 % # ¿Cómo se afecta este resultado si agrega una componente de ruido 
