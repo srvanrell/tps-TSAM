@@ -2,16 +2,16 @@ clc; clear all;
 format long
 
 numpadre = 5;
-ipadre = 0.50040;
+ipadre =  0.673011667009257;
 
 % nodo hijo izquierdo (responde si)
-numizq = 2;
-nizq = 1;
-pizq = 1;
+numizq = 0;
+nizq = 0;
+pizq = 0;
 
 % nodo hijo derecho (responde no)
-numder = 3;
-nder = 0;
+numder = 5;
+nder = 2;
 pder = 3;
 
 %calculos

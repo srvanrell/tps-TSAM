@@ -53,6 +53,9 @@ ylabel('x_2')
 % surf(x1,x2,g3)
 % hold off
 
+
+
+figure
 %%
 % Cargo los datos (patrones con sus clases respectivas)
 data = load('gaussDATA.txt', '-ascii');
