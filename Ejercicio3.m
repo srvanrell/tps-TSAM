@@ -7,7 +7,7 @@ clc; close all; clear all;
 % Implemente el algoritmo de PCA.
 %
 % Debajo se copia el código fuente de la función implementada. La
-% descripción de la misma se encuentra dentro del mismo código.
+% descripción de la misma se encuentra dentro del código.
 
 %% mipca.m
 dbtype mipca.m
