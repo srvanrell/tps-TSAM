@@ -1,4 +1,4 @@
-function [sepMat] = ica( X )
+function [sepMat] = fastica( Y )
 %ICA devuelve la matriz de separación
 % 
 % 
@@ -14,17 +14,8 @@ function [sepMat] = ica( X )
 % autoval es un vector con los autovalores asociados, en orden decreciente.
 
 
-% Matriz de covarianza (internamente realiza la resta de la media)
-S = cov(X'); % traspongo para que tome bien las observaciones
 
-% Obtengo la matriz de autovectores y una matriz con los autovalores de S
-[autovec, autoval] = eig(S);
-
-% Ordeno la matriz de transformación por orden descendente de autovalores
-PC = flipud(autovec);
-
-% Autovalores ordenados por módulo decreciente
-autoval = flipdim(diag(autoval),1);
+sepMat = Y;
 
 end
 

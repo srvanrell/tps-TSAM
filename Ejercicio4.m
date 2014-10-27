@@ -13,31 +13,25 @@ clc; close all; clear all;
 % dbtype ica.m
 
 %% 2
-% Escriba un programa que le permita generar datos aleatorios $\mathbf(x)$
-% a partir del siguiente modelo generativo lineal: 
-% $\mathbf(x) = \mathbf(A) \mathbf(s)$, donde $\mathbf(s)$ es el vector de
-% fuentes (aleatorio) y $\mathbf(A)$ es la matriz de mezcla.
-
-%% mezclar.m
-dbtype mezclar.m
-
-%% 3
-% A partir de datos de dos mezclas, obtenidos mediante dos fuentes y una
-% matriz de mezcla aleatoria, utilice PCA para lo siguiente:
+% A partir de datos de dos mezclas, obtenidos mediante dos fuentes 
+% laplacianas y una matriz de mezcla aleatoria, utilice FastICA para lo 
+% siguiente:
 % 
+% 
+% REVISAR
 % # Pruebe con fuentes con distribución gaussiana y laplaciana, para
 % matrices de mezcla con columnas ortogonales y no ortogonales.
 % # Para cada caso de los anteriores y cada etapa (fuentes, mezclas,
 % señales separadas) dibuje un gráfico de dispersión de las variables.
 % # Luego de la separación obtenga la matriz $\mathbf{W}$ correspondiente.
 
-N = 1000;
+N = 10000;
 
 % Fuentes gaussianas y laplacianas 
-s{1} = randgauss1D(1, 1, N)'; 
-s{2} = randgauss1D(3, 3, N)';
-s{3} = randlap(N, 2 ,2)';
-s{4} = randlap(N, 5 ,0.9)';
+% s{1} = randgauss1D(1, 1, N)'; 
+% s{2} = randgauss1D(3, 3, N)';
+s{1} = randlap(N, 2 , 2)';
+s{2} = randlap(N, -3 ,0.9)';
 
 % Se corroboran los signos para impedir que las mezclas sean iguales
 signos = ones(2);
@@ -50,44 +44,65 @@ A{2} = (2*rand(2)-1) .* signos;  % Mezcla no ortogonal
 titort{1} = 'ortogonales';
 titort{2} = 'no ortogonales';
 suptit{1} = 'Fuentes gaussianas';
-suptit{2} = 'Fuentes laplacianas';
+suptit{1} = 'Fuentes laplacianas';
 
-for ss = 1:2
+for ss = 1
     figure
-    for aa = 1:2
-        X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
+    for aa = 2
+        %% Mezclas de las dos fuentes
+        X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas de las dos fuentes 
         
-        W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
-                      % componentes principales
+        %% Blanqueo de las mezclas mediante PCA
+        [U, lambdas] = mipca(X);
+        % U: matriz cuyas columnas son los versores de las direcciones 
+        %    principales.
+        % lambdas: es un vector con los autovalores
         
-        Y = W * X; % Proyecto los datos sobre las direcciones principales
+        Lmenos1medio = diag( sqrt(lambdas.^(-1)) );%matriz con las inversas
+                                                   %de los lambdas en la 
+                                                   %diagonal principal
         
-        subplot(2,3,1+3*(aa-1))
+        Xmean = repmat( mean(X,2), 1, size(X,2) ); %media de las señales
+        
+        Y = Lmenos1medio * U * (X - Xmean);       %señales blanqueadas
+        
+        cov(Y')
+        %% Separación con FastICA
+        W = fastica(Y); % me devuelve la matriz de separación
+%         Y = W * X; % Proyecto los datos sobre las direcciones principales
+        
+        subplot(2,2,1)
         scatter(s{2*ss-1}, s{2*ss}); axis equal;
-        title({'Fuentes';['columnas ' titort{aa}]} )
+        title({'Fuentes'})%;['columnas ' titort{aa}]} )
         xlabel('s_1'); ylabel('s_2');
         
-        subplot(2,3,2+3*(aa-1))
+        subplot(2,2,2)
         scatter(X(1,:), X(2,:)); axis equal;
-        hold on; 
-        x1m = mean(X(1,:));
-        x2m = mean(X(2,:));
-        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
-        plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
-        hold off
-        title({'Mezclas';['columnas ' titort{aa}]} )
+%         hold on; 
+%         x1m = mean(X(1,:));
+%         x2m = mean(X(2,:));
+%         plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
+%         plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
+%         hold off
+        title({'Mezclas'})%;['columnas ' titort{aa}]} )
         xlabel('x_1'); ylabel('x_2');
         
-        subplot(2,3,3+3*(aa-1))
+        subplot(2,2,3)
         scatter(Y(1,:), Y(2,:)); axis equal;
-        title({'Señales separadas';['columnas ' titort{aa}]} )
+        title({'Señales blanqueadas'})%;['columnas ' titort{aa}]} )
         xlabel('y_1'); ylabel('y_2');
         
-        A{aa}
-        inv(A{aa})
-        W
+        
+        subplot(2,2,4)
+%         scatter(Y(1,:), Y(2,:)); axis equal;
+        title({'Señales separadas'})%;['columnas ' titort{aa}]} )
+        xlabel('y_1'); ylabel('y_2');
+        
+%         A{aa}
+%         inv(A{aa})
+%         W
     end
-    suptitle(suptit{ss})
+%     suptitle(suptit{ss})
 end
 
 %%
@@ -115,41 +130,41 @@ end
 %%
 % # ¿Cómo se afecta este resultado si agrega una componente de ruido 
 % gaussiano al modelo generativo?
-
-for ss = 1:2
-    figure
-    for aa = 1:2
-        X = mezclarconruido(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
-        
-        W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
-                      % componentes principales
-        
-        Y = W * X; % Proyecto los datos sobre las direcciones principales
-        
-        subplot(2,3,1+3*(aa-1))
-        scatter(s{2*ss-1}, s{2*ss}); axis equal;
-        title({'Fuentes';['columnas ' titort{aa}]} )
-        xlabel('s_1'); ylabel('s_2');
-        
-        subplot(2,3,2+3*(aa-1))
-        scatter(X(1,:), X(2,:)); axis equal;
-        hold on; 
-        x1m = mean(X(1,:));
-        x2m = mean(X(2,:));
-        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
-        plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
-        hold off
-        title({'Mezclas';['columnas ' titort{aa}]} )
-        xlabel('x_1'); ylabel('x_2');
-        
-        subplot(2,3,3+3*(aa-1))
-        scatter(Y(1,:), Y(2,:)); axis equal;
-        title({'Señales separadas';['columnas ' titort{aa}]} )
-        xlabel('y_1'); ylabel('y_2');
-        
-        A{aa}
-        inv(A{aa})
-        W
-    end
-    suptitle(suptit{ss})
-end
+% 
+% for ss = 1:2
+%     figure
+%     for aa = 1:2
+%         X = mezclarconruido(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
+%         
+%         W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
+%                       % componentes principales
+%         
+%         Y = W * X; % Proyecto los datos sobre las direcciones principales
+%         
+%         subplot(2,3,1+3*(aa-1))
+%         scatter(s{2*ss-1}, s{2*ss}); axis equal;
+%         title({'Fuentes';['columnas ' titort{aa}]} )
+%         xlabel('s_1'); ylabel('s_2');
+%         
+%         subplot(2,3,2+3*(aa-1))
+%         scatter(X(1,:), X(2,:)); axis equal;
+%         hold on; 
+%         x1m = mean(X(1,:));
+%         x2m = mean(X(2,:));
+%         plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
+%         plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
+%         hold off
+%         title({'Mezclas';['columnas ' titort{aa}]} )
+%         xlabel('x_1'); ylabel('x_2');
+%         
+%         subplot(2,3,3+3*(aa-1))
+%         scatter(Y(1,:), Y(2,:)); axis equal;
+%         title({'Señales separadas';['columnas ' titort{aa}]} )
+%         xlabel('y_1'); ylabel('y_2');
+%         
+%         A{aa}
+%         inv(A{aa})
+%         W
+%     end
+%     suptitle(suptit{ss})
+% end

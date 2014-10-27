@@ -32,19 +32,19 @@ datosCuadro2 = {'soleado',  85,    85,   'no', 'N';
                 'nublado',  81,    75,   'no', 'P';
                 'lluvioso', 71,    80,   'si', 'N';};
 
-            
+%%            
 % listaEjemplos = 1:14;
-nombresCaract = {'pronóstico', 'temperatura', 'humedad', 'viento'};
+nombresCaract = {'pronï¿½stico', 'temperatura', 'humedad', 'viento'};
 debug = 2;
-
+%%
 % Ejercicio 1.b
 tipoImpureza = 'ent';
 arbol1b = crecerArbol(datosCuadro1, [],nombresCaract,tipoImpureza,debug);
 %%
-% Este arbol da igual que el que hice a mano, sólo cambia la forma de
+% Este arbol da igual que el que hice a mano, sï¿½lo cambia la forma de
 % expresar las preguntas. Por ejemplo, en 4 en vez de preguntar por
-% ¿lluvioso o soleado? pregunta sólo por ¿lluvioso?
-% En nodo 9 donde podria haber elegido temperatura también elige pronostico
+% ï¿½lluvioso o soleado? pregunta sï¿½lo por ï¿½lluvioso?
+% En nodo 9 donde podria haber elegido temperatura tambiï¿½n elige pronostico
 
 % Ejercicio 1.c
 tipoImpureza = 'gini';
