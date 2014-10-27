@@ -45,8 +45,8 @@
 % DEPRECATED COMMANDS
 %---------------------------------------------------------------------------------  
 \usepackage[spanish]{babel}     % Configura en modo español a muchas cosas
-%\usepackage{amsfonts}
-%\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amssymb}
 \usepackage[babel,
             spanish=spanish]
             {csquotes}          % Comillas francesas en la bibliografia
@@ -77,9 +77,7 @@
 
 \newpage
 
-\section{Ejercicio 2}
-
-Clasificación estadística de patrones.
+\section{Ejercicio 2 - Clasificación estadística de patrones}
 
 \subsection{Ejercicio 2.1}
 
@@ -89,9 +87,10 @@ Sea un clasificador geométrico lineal definido por:
 \item $g_2(\mathbf{x}) = x_1 + x_2 - 1$
 \item $g_3(\mathbf{x}) = x_1 - x_2 - 1$
 \end{itemize}
-\begin{enumerate}
+
+\begin{description}
 \item[a)] Calcule y grafique las fronteras y regiones de decisión.
-\end{enumerate}
+\end{description}
 
 Para calcular las fronteras de decisión desarrollo las siguientes inecuaciones:
 \begin{align*}
@@ -116,7 +115,7 @@ Para graficar las regiones de decisión (Figura \ref{ejercicio21}) considero que
 	\label{ejercicio21}
 \end{figure}
 
-\begin{enumerate}
+\begin{description}
 \item[b)] Clasifique los puntos (2,1); (2,-1); (-1,1); (-1,-1).
 \begin{itemize}
 \item $\mathrm{p_1}:\; (2,1) \in C_2$
@@ -124,7 +123,78 @@ Para graficar las regiones de decisión (Figura \ref{ejercicio21}) considero que
 \item $\mathrm{p_3}:\; (-1,1) \in C_1$
 \item $\mathrm{p_4}:\; (-1,-1) \in C_1$
 \end{itemize}
-\end{enumerate}
+\end{description}
+
+
+
+\subsection{Ejercicio 2.2}
+
+Sean $A$ y $B$ dos clases de igual probabilidad a priori definidas por:
+\begin{itemize}
+\item $P(\mathbf{x}|A) \rightsquigarrow \mathcal{N}\left( 
+\left(\begin{matrix}3\\0 \end{matrix}\right) ,
+\left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
+\right)$ 
+\item $P(\mathbf{x}|B) \rightsquigarrow \mathcal{N}\left( 
+\left(\begin{matrix}0\\3 \end{matrix}\right) ,
+\left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
+\right)$ 
+\end{itemize}
+
+\begin{description}
+\item[a)] Construya un clasificador gaussiano y encuentre la frontera.
+
+Dado que se pretende construir un clasificador gaussiano las funciones discriminantes son las probabilidades a posteriori:
+\begin{itemize}
+\item $g_A(\mathbf{x})=P(A|\mathbf{x}) = P(\mathbf{x}|A) P(A) / P(\mathbf{x})$ y
+\item $g_B(\mathbf{x})=P(B|\mathbf{x}) = P(\mathbf{x}|B) P(B) / P(\mathbf{x})$.
+\end{itemize} 
+Como $(P(A)/P(\mathbf{x}))=(P(B)/P(\mathbf{x}))$ es un factor constante que afecta por igual a ambas funciones discriminantes se pueden simplificar a:
+\begin{itemize}
+\item $g_A(\mathbf{x})= P(\mathbf{x}|A) = \mathcal{N}\left( 
+\left(\begin{matrix}3\\0 \end{matrix}\right) ,
+\left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
+\right)$ y
+\item $g_B(\mathbf{x})= P(\mathbf{x}|B) = \mathcal{N}\left( 
+\left(\begin{matrix}0\\3 \end{matrix}\right) ,
+\left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
+\right)$.
+\end{itemize}
+La expresión de la normal puede simplificarse aún más en este caso, sin pérdida de la capacidad discriminante de las funciones. En primer lugar se utiliza el hecho de que las matrices de covarianzas son la matriz identidad. 
+\[\mathcal{N}\left( {\boldsymbol \mu},{\boldsymbol\Sigma} \right)\]
+\[\mathcal{N}\left( {\boldsymbol \mu},{\boldsymbol I} \right)\]
+\[\frac{1}{\sqrt{(2\pi)^2|\boldsymbol I|}}
+\exp\left(-\frac{1}{2}({\mathbf x}-{\boldsymbol\mu})^T{\boldsymbol I}^{-1}({\mathbf x}-{\boldsymbol\mu})
+\right)\]
+\[\frac{1}{\sqrt{(2\pi)^2}}
+\exp\left(-\frac{1}{2}({\mathbf x}-{\boldsymbol\mu})^T({\mathbf x}-{\boldsymbol\mu})
+\right)\]
+En segundo lugar, el factor que afecta a la exponencial es el mismo en ambas funciones. 
+\[\exp\left(-\frac{1}{2}({\mathbf x}-{\boldsymbol\mu})^T({\mathbf x}-{\boldsymbol\mu})\right)\]
+En último lugar se aplica el logaritmo natural, función monótona creciente no afecta a la función cóncava original y se quita el factor constante 1/2.
+\[-\frac{1}{2}\parallel{\mathbf x}-{\boldsymbol\mu}\parallel^2\]
+\[-\parallel{\mathbf x}-{\boldsymbol\mu}\parallel^2 \]
+Entonces las funciones discriminantes resultan ser:
+\begin{itemize}
+\item $g_A(\mathbf{x})= -\parallel{\mathbf x}-{\boldsymbol\mu}_A\parallel^2$ y
+\item $g_B(\mathbf{x})= -\parallel{\mathbf x}-{\boldsymbol\mu}_B\parallel^2$,
+\end{itemize}
+donde el máximo entre ambas funciones indica la pertenencia a $A$ o $B$.
+
+Para encontrar la frontera de decisión igualo ambas funciones:
+\begin{align*}
+g_A(\mathbf{x}) &= g_B(\mathbf{x}) \\
+-\parallel{\mathbf x}-{\boldsymbol\mu}_A\parallel^2 &= -\parallel{\mathbf x}-{\boldsymbol\mu}_B\parallel^2 \\
+\parallel{\mathbf x}-{\boldsymbol\mu}_A\parallel^2 &= \parallel{\mathbf x}-{\boldsymbol\mu}_B\parallel^2 \\
+(x_1 - 3)^2 + x_2^2 &= x_1^2 +(x_2 - 3)^2\\
+x_1^2 - 6 x_1 + 9 + x_2^2 &= x_1^2 + x_2^2 - 6 x_2 + 9\\
+x_1 &= x_2 
+\end{align*}
+
+
+\item[b)] Realice una representación gráfica del problema.
+\end{description}
+
 
 %\begin{par}
 %Considere el sistema $H(z)=\frac{1-2z^{-1}+2z^{-2}-z^{-3}}{(1-z^{-1})(1-0.5z^{-2})(1-0.2z^{-3})}$
