@@ -16,7 +16,7 @@ S = cov(X'); % traspongo para que tome bien las observaciones
 [autovec, autoval] = eig(S);
 
 % Ordeno la matriz de transformación por orden descendente de autovalores
-PC = flipud(autovec);
+PC = fliplr(autovec);
 
 % Autovalores ordenados por módulo decreciente
 autoval = flipdim(diag(autoval),1);

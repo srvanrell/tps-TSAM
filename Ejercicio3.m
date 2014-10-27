@@ -58,9 +58,11 @@ for ss = 1:2
         X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas 
         
         W = mipca(X); % Obtengo la Matriz de Proyección de X sobre las
-                      % componentes principales
+                      % componentes principales, versores por columnas
         
-        Y = W * X; % Proyecto los datos sobre las direcciones principales
+        Y = W' * X; % Proyecto los datos sobre las direcciones principales
+        % y_1  = w_11 * x_1 + w_21 * x_2
+        % y_2  = w_12 * x_2 + w_22 * x_2
         
         subplot(2,3,1+3*(aa-1))
         scatter(s{2*ss-1}, s{2*ss}); axis equal;
@@ -72,8 +74,8 @@ for ss = 1:2
         hold on; 
         x1m = mean(X(1,:));
         x2m = mean(X(2,:));
-        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
-        plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
+        plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(2,1)], 'k','LineWidth',2)
+        plot(x1m + [0 5*W(1,2)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
         hold off
         title({'Mezclas';['columnas ' titort{aa}]} )
         xlabel('x_1'); ylabel('x_2');
