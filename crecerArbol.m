@@ -1,92 +1,131 @@
-function arbol = crecerArbol(datos, ejemplos, listaCaracteristicas)
-%arbol = crecerArbol(datos, ejemplosAClasif, listaCaracteristicas)
+function arbol = crecerArbol(datos, ejemplos, listaCaracteristicas,...
+                             tipoImpureza, debugging)
+%
+%
 
-arbol = {}; % arbol inicial vacío
-nodosARevisar = [1];
-nodo.ejemplos = ejemplos; % inicializo con todos los ejemplos
-nodo.tipo = 'aRevisar';
-arbol{1} = nodo;
-
-while ~isempty(nodosARevisar)
-    auxe = 1:14;
-    nodo.id = nodosARevisar(1);
-    ejemplos = auxe(arbol{nodosARevisar(1)}.ejemplos);
-    
-    fprintf('\nEn nodo %i reviso los ejemplos:\n',nodo.id)
-    fprintf('%i, ',ejemplos)
-    fprintf('\n')
-    
-    
-% Genera una lista con las clases encontradas en los ejemplos
-clasesEnEjemplos = datos(ejemplos,end); % lista con la clase de cada ejemplo
-clases = unique(clasesEnEjemplos); % lista con las posibles clases
-
-%% Si todos los ejemplos pertenecen a la misma clase creo un nodo hoja
-if length(clases) == 1
-    nodo.tipo = 'hoja';             % tipo de nodo
-    nodo.clase = clases{1};         % clase del nodo hoja
-    
-    fprintf('nodo hoja, clase: %s\n', nodo.clase)
-
-%% Si no son todos los ejemplos de la misma clase y no quedan 
-%  caracteristicas para utilizar la clase se define por mayoria entre los 
-%  ejemplos
-elseif isempty(listaCaracteristicas)
-    cuentaXclase = histClases(clasesEnEjemplos); % simil histograma
-    [~, imax] = max(cuentaXclase);% indice de la clase mayoritaria
-    nodo.clase = clases{imax};      % clase mayoritaria
-    nodo.tipo = 'hoja';             % tipo de nodo
-    
-    fprintf('nodo hoja impuro, clase: %s\n', nodo.clase)
-
-%% Si no son todos los ejemplos de la misma clase y se puede ramificar
-%  se debe elegir que caracteristica utilizar
+if (nargin < 2) || isempty(ejemplos)
+    n1.ejemplos = 1:size(datos,1); % inicializo con todos los ejemplos
 else
-    nPadre = length(ejemplos);                  % ejemplos en el nodo padre
-    iPadre = impureza(clasesEnEjemplos, 'ent'); % impureza del nodo padre
-    deltaimax = 0; % variable auxiliar para encontrar la mejor ramificación
+    n1.ejemplos = ejemplos; % inicializo con los ejemplos dados
+end
+if (nargin < 3) || isempty(listaCaracteristicas)
+    auxc = 1:(size(datos,2)-1); % todas las caracteristicas
+    listaCaracteristicas = sprintf('Atributo%i ',auxc)
+    listaCaracteristicas = strsplit(listaCaracteristicas(1:end-1));
+end
+if (nargin < 4) || isempty(tipoImpureza)
+    tipoImpureza = 'ent'; % calcula impureza por entropia
+end
+if nargin < 5
+    debugging = false; % Por defecto no imprime por pantalla
+end
+
+
+n1.id = 1;                     % id del nodo raiz
+nodosARevisar = n1.id;         % el primer nodo a revisar es el nodo raiz
+n1.tipo = 'aRevisar';          % tipo provisorio
+arbol{1} = n1;                 % arbol inicial con nodo raiz
+
+% mientras queden nodos por revisar
+while ~isempty(nodosARevisar)
+    % Reviso el siguiente nodo de la lista
+    nodo.id = nodosARevisar(1);
+    % enumero los ejemplos que le corresponden 
+    ejemplos = arbol{nodosARevisar(1)}.ejemplos;
     
-    % Para cada caracteristica candidata
-    for lc = 1:length(listaCaracteristicas)
-        decisionesCandidatas = unique(datos(ejemplos,lc));
+    % Genera una lista con las clases encontradas en los ejemplos
+    clasesEnEjemplos = datos(ejemplos,end); %lista la clase de cada ejemplo
+    clases = unique(clasesEnEjemplos);      %lista con las posibles clases
+
+    %% Si todos los ejemplos pertenecen a la misma clase creo un nodo hoja
+    if length(clases) == 1
+        nodo.tipo = 'hoja';             % tipo de nodo
+        nodo.clase = clases{1};         % clase del nodo hoja
+
+    %% Si no son todos los ejemplos de la misma clase se debe elegir que 
+    %  caracteristica utilizar
+    else
+        % Cantidad de ejemplos e impureza del nodo padre
+        nPadre = length(ejemplos);                 
+        iPadre = impureza(clasesEnEjemplos, tipoImpureza); 
+        deltaimax = 0; %variable auxiliar para buscar la mejor ramificación
+        nodo.tipo = 'sinAsignar'; % etiqueta de control interno
         
-        % diferencia entre caracteristicas con dos o más valores
-        if length(decisionesCandidatas) == 2
-            iterFinal = 1; 
-        else
+        % Para cada caracteristica candidata
+        for lc = 1:length(listaCaracteristicas)
+            decisionesCandidatas = unique(datos(ejemplos,lc));
             iterFinal = length(decisionesCandidatas);
-        end
-        
-        % Para cada valor posible de la caracteristica candidata se calcula
-        % el deltai
-        for dc = 1:iterFinal
-            auxHijoSi = strcmp(decisionesCandidatas(dc), datos(ejemplos,lc));
-            auxHijoNo = ~auxHijoSi;
-            nHijoSi = sum(auxHijoSi);
-            nHijoNo = sum(auxHijoNo);
-            iHijoSi = impureza(clasesEnEjemplos(auxHijoSi), 'ent');
-            iHijoNo = impureza(clasesEnEjemplos(auxHijoNo), 'ent');
             
-            deltai = iPadre - (nHijoSi/nPadre) * iHijoSi - ...
-                     (nHijoNo/nPadre) * iHijoNo;
-                 
-            if deltai > deltaimax
-                deltaimax = deltai;
+            % si hay dos valores posibles no necesita iterar más de una vez
+            if iterFinal == 2
+                iterFinal = 1;
+            end
+            
+            % Para cada valor posible de la caracteristica candidata se calcula
+            % el deltai, a la vez que se compara con el maximo almacenado.
+            for dc = 1:iterFinal
+                auxHijoSi = strcmp(decisionesCandidatas(dc), datos(ejemplos,lc));
+                auxHijoNo = ~auxHijoSi;
+                nHijoSi = sum(auxHijoSi);
+                nHijoNo = sum(auxHijoNo);
+                iHijoSi = impureza(clasesEnEjemplos(auxHijoSi), tipoImpureza);
+                iHijoNo = impureza(clasesEnEjemplos(auxHijoNo), tipoImpureza);
                 
-                nodo.tipo = 'divisor';                   % tipo de nodo
-                nodo.pregunta = decisionesCandidatas{dc}; % pregunta utilizada
-                nodo.HijoSi = length(arbol) + 1;
-                nodo.HijoNo = length(arbol) + 2;
-                nodoHijoSi.tipo = 'aRevisar';
-                nodoHijoNo.tipo = 'aRevisar';
-                nodoHijoSi.ejemplos = ejemplos(auxHijoSi);
-                nodoHijoNo.ejemplos = ejemplos(auxHijoNo);
+                deltai = iPadre - (nHijoSi/nPadre) * iHijoSi - ...
+                    (nHijoNo/nPadre) * iHijoNo;
+                
+                % Si deltai es mayor al maximo pasa a ser la decision elegida
+                if deltai > deltaimax
+                    deltaimax = deltai;
+                    
+                    % El nodo actual se divide en dos.
+                    nodo.tipo = 'divisor';
+                    % Se guarda la pregunta utilizada para dividir
+                    nodo.pregunta = ['¿' listaCaracteristicas{lc} '=' ...
+                                     decisionesCandidatas{dc} '?'];
+                    % Se asignan los id de los nodos que responden si y no
+                    nodo.HijoSi = length(arbol) + 1;
+                    nodo.HijoNo = length(arbol) + 2;
+                    % Tipo provisorio
+                    nodoHijoSi.tipo = 'aRevisar';
+                    nodoHijoNo.tipo = 'aRevisar';
+                    % Los ejemplos del padre se dividen entre los nodos hijos
+                    nodoHijoSi.ejemplos = ejemplos(auxHijoSi);
+                    nodoHijoNo.ejemplos = ejemplos(auxHijoNo);
+                end
             end
         end
     end
     
-    fprintf('nodo divisor en: %s\n', nodo.pregunta)
-end   
+    % Si no se pudo ramificar y el nodo contiene más de una clase
+    if strcmp(nodo.tipo,'sinAsignar')
+        cuentaXclase = histClases(clasesEnEjemplos); % simil histograma
+        [~, imax] = max(cuentaXclase);  % indice de la clase mayoritaria
+        nodo.clase = clases{imax};      % clase mayoritaria
+        nodo.tipo = 'hoja';             % tipo de nodo
+    end
+    
+    % Si está activo el debugging imprimo en pantalla
+    if debugging
+        fprintf('\nEn nodo %i reviso los ejemplos:\n',nodo.id);
+        fprintf('%i, ',ejemplos);
+        
+        if strcmp(nodo.tipo,'hoja')
+            fprintf('\nNodo hoja, clase: %s\n', nodo.clase);
+            if length(clases) > 1
+                fprintf('------¡Impuro!----------\n')
+                fprintf('%s\t', clases{:});
+                fprintf('\n');
+                fprintf('%i\t', cuentaXclase);
+                fprintf('\n');
+            end
+        elseif strcmp(nodo.tipo,'divisor')
+            fprintf('\nNodo divisor: %s\n', nodo.pregunta);
+        else
+            disp('---- ¡Ups! el árbol tiene una rama seca ----');
+        end
+    end
+    
     % Definido el nodo lo agrego al arbol
     arbol{nodosARevisar(1)} = nodo;
     
@@ -98,6 +137,18 @@ end
     end
     nodosARevisar = setdiff(nodosARevisar, nodosARevisar(1));
     
+    % Limpieza antes del siguiente ciclo
     clear nodo nodoHijoSi nodoHijoNo; 
 end
 
+% Si está activo el debugging imprime el árbol creado
+if debugging
+    disp('-------------------------')
+    disp('Detalles del árbol creado')
+    disp('-------------------------')
+    for aa = 1:length(arbol)
+        disp(arbol{aa})
+    end
+end
+
+end
