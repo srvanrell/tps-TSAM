@@ -10,7 +10,7 @@ else
 end
 if (nargin < 3) || isempty(listaCaracteristicas)
     auxc = 1:(size(datos,2)-1); % todas las caracteristicas
-    listaCaracteristicas = sprintf('Atributo%i ',auxc)
+    listaCaracteristicas = sprintf('Atributo%i ',auxc);
     listaCaracteristicas = strsplit(listaCaracteristicas(1:end-1));
 end
 if (nargin < 4) || isempty(tipoImpureza)
@@ -34,8 +34,8 @@ while ~isempty(nodosARevisar)
     ejemplos = arbol{nodosARevisar(1)}.ejemplos;
     
     % Genera una lista con las clases encontradas en los ejemplos
-    clasesEnEjemplos = datos(ejemplos,end); %lista la clase de cada ejemplo
-    clases = unique(clasesEnEjemplos);      %lista con las posibles clases
+    clasesPorEjemplo = datos(ejemplos,end); %lista la clase de cada ejemplo
+    clases = unique(clasesPorEjemplo);      %lista con las posibles clases
 
     %% Si todos los ejemplos pertenecen a la misma clase creo un nodo hoja
     if length(clases) == 1
@@ -47,29 +47,54 @@ while ~isempty(nodosARevisar)
     else
         % Cantidad de ejemplos e impureza del nodo padre
         nPadre = length(ejemplos);                 
-        iPadre = impureza(clasesEnEjemplos, tipoImpureza); 
+        iPadre = impureza(clasesPorEjemplo, tipoImpureza); 
         deltaimax = 0; %variable auxiliar para buscar la mejor ramificación
         nodo.tipo = 'sinAsignar'; % etiqueta de control interno
         
         % Para cada caracteristica candidata
         for lc = 1:length(listaCaracteristicas)
-            decisionesCandidatas = unique(datos(ejemplos,lc));
-            iterFinal = length(decisionesCandidatas);
+            % si las caracteristicas son numéricas
+            auxcarac = horzcat(datos{ejemplos,lc});
+            esNumerica = isnumeric(auxcarac);
+            
+            % exploro las alternativas de cada caracteristica
+            if esNumerica
+                % si es numérica genero los candidatos ordenando por valor
+                % y tomando el valor medio en cada salto de clase
+                [valor, orden] = sort(horzcat(datos{ejemplos,lc}));
+                clasesOrdenadas = clasesPorEjemplo(orden);
+                decisionesCandidatas = [];
+                for co = 2:length(clasesOrdenadas)
+                    if ~strcmp(clasesOrdenadas(co-1),clasesOrdenadas(co))
+                        vmedio = 0.5 * (valor(co-1) + valor(co));
+                        decisionesCandidatas=[decisionesCandidatas vmedio];
+                    end
+                end
+            else
+                % si es categórica cada valor se vuelve candidato
+                decisionesCandidatas = unique(datos(ejemplos,lc));
+            end
+            iterFinal = length(decisionesCandidatas); % itero sobre todas 
+                                                      % las opciones
             
             % si hay dos valores posibles no necesita iterar más de una vez
-            if iterFinal == 2
+            if (iterFinal == 2) && esNumerica
                 iterFinal = 1;
             end
             
             % Para cada valor posible de la caracteristica candidata se calcula
             % el deltai, a la vez que se compara con el maximo almacenado.
             for dc = 1:iterFinal
-                auxHijoSi = strcmp(decisionesCandidatas(dc), datos(ejemplos,lc));
+                if esNumerica
+                    auxHijoSi = (decisionesCandidatas(dc) > auxcarac);
+                else
+                    auxHijoSi = strcmp(decisionesCandidatas(dc), datos(ejemplos,lc));
+                end
                 auxHijoNo = ~auxHijoSi;
                 nHijoSi = sum(auxHijoSi);
                 nHijoNo = sum(auxHijoNo);
-                iHijoSi = impureza(clasesEnEjemplos(auxHijoSi), tipoImpureza);
-                iHijoNo = impureza(clasesEnEjemplos(auxHijoNo), tipoImpureza);
+                iHijoSi = impureza(clasesPorEjemplo(auxHijoSi), tipoImpureza);
+                iHijoNo = impureza(clasesPorEjemplo(auxHijoNo), tipoImpureza);
                 
                 deltai = iPadre - (nHijoSi/nPadre) * iHijoSi - ...
                     (nHijoNo/nPadre) * iHijoNo;
@@ -81,8 +106,13 @@ while ~isempty(nodosARevisar)
                     % El nodo actual se divide en dos.
                     nodo.tipo = 'divisor';
                     % Se guarda la pregunta utilizada para dividir
-                    nodo.pregunta = ['¿' listaCaracteristicas{lc} '=' ...
-                                     decisionesCandidatas{dc} '?'];
+                    if esNumerica
+                        nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
+                                         sprintf(' < %0.1f?', decisionesCandidatas(dc))];
+                    else
+                        nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
+                                         '=' decisionesCandidatas{dc} '?'];
+                    end
                     % Se asignan los id de los nodos que responden si y no
                     nodo.HijoSi = length(arbol) + 1;
                     nodo.HijoNo = length(arbol) + 2;
@@ -99,14 +129,14 @@ while ~isempty(nodosARevisar)
     
     % Si no se pudo ramificar y el nodo contiene más de una clase
     if strcmp(nodo.tipo,'sinAsignar')
-        cuentaXclase = histClases(clasesEnEjemplos); % simil histograma
+        cuentaXclase = histClases(clasesPorEjemplo); % simil histograma
         [~, imax] = max(cuentaXclase);  % indice de la clase mayoritaria
         nodo.clase = clases{imax};      % clase mayoritaria
         nodo.tipo = 'hoja';             % tipo de nodo
     end
     
     % Si está activo el debugging imprimo en pantalla
-    if debugging
+    if debugging > 1
         fprintf('\nEn nodo %i reviso los ejemplos:\n',nodo.id);
         fprintf('%i, ',ejemplos);
         
