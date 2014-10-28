@@ -53,23 +53,24 @@ for ss = 1
         X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas de las dos fuentes 
         
         %% Blanqueo de las mezclas mediante PCA
-        [U, lambdas] = mipca(X);
-        % U: matriz cuyas columnas son los versores de las direcciones 
+        [E, lambdas] = mipca(X);
+        % E: matriz cuyas columnas son los versores de las direcciones 
         %    principales.
         % lambdas: es un vector con los autovalores
         
-        Lmenos1medio = diag( sqrt(lambdas.^(-1)) );%matriz con las inversas
+        Dmenos1medio = diag( sqrt(lambdas.^(-1)) );%matriz con las inversas
                                                    %de los lambdas en la 
                                                    %diagonal principal
         
         Xmean = repmat( mean(X,2), 1, size(X,2) ); %media de las señales
         
-        Y = Lmenos1medio * U * (X - Xmean);       %señales blanqueadas
+        Z = Dmenos1medio * E'  * (X - Xmean);       %señales blanqueadas
         
-        cov(Y')
+        
         %% Separación con FastICA
-        W = fastica(Y); % me devuelve la matriz de separación
-%         Y = W * X; % Proyecto los datos sobre las direcciones principales
+        W = fastica(Z); % me devuelve la matriz de separación
+        Y = W * Z; % Proyecto los datos sobre las direcciones principales
+        
         
         subplot(2,2,1)
         scatter(s{2*ss-1}, s{2*ss}); axis equal;
@@ -88,7 +89,7 @@ for ss = 1
         xlabel('x_1'); ylabel('x_2');
         
         subplot(2,2,3)
-        scatter(Y(1,:), Y(2,:)); axis equal;
+        scatter(Z(1,:), Z(2,:)); axis equal;
         title({'Señales blanqueadas'})%;['columnas ' titort{aa}]} )
         xlabel('y_1'); ylabel('y_2');
         
@@ -96,6 +97,7 @@ for ss = 1
         subplot(2,2,4)
 %         scatter(Y(1,:), Y(2,:)); axis equal;
         title({'Señales separadas'})%;['columnas ' titort{aa}]} )
+        scatter(Y(1,:), Y(2,:)); axis equal;
         xlabel('y_1'); ylabel('y_2');
         
 %         A{aa}

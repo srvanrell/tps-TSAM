@@ -1,5 +1,5 @@
 function [sepMat] = fastica( Y )
-%ICA devuelve la matriz de separación
+%ICA devuelve la matriz de separación W
 % 
 % 
 % REVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -15,7 +15,7 @@ function [sepMat] = fastica( Y )
 
 
 
-sepMat = Y;
+sepMat = cov(Y');
 
 end
 
