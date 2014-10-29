@@ -31,81 +31,134 @@ N = 1000;
 % s{1} = randgauss1D(1, 1, N)'; 
 % s{2} = randgauss1D(3, 3, N)';
 s{1} = randlap(N, 2 , 2)';
-s{2} = randlap(N, -3 ,0.9)';
+s{2} = randlap(N, -5,0.4)';
 
 % Se corroboran los signos para impedir que las mezclas sean iguales
-signos = ones(2);
-while isequal(signos(1,:),signos(2,:)) || isequal(signos(1,:), -signos(2,:))
-    signos = sign(rand(2)-0.5);
-end
+% signos = ones(2);
+% while isequal(signos(1,:),signos(2,:)) || isequal(signos(1,:), -signos(2,:))
+%     signos = sign(rand(2)-0.5);
+% end
 % Generacacion de las matrices de mezcla
-A{1} = repmat(2*rand(1,2)-1,2,1) .* signos;  % Mezcla ortogonal
-A{2} = (2*rand(2)-1) .* signos;  % Mezcla no ortogonal
-titort{1} = 'ortogonales';
-titort{2} = 'no ortogonales';
-suptit{1} = 'Fuentes gaussianas';
-suptit{1} = 'Fuentes laplacianas';
+% A{1} = repmat(2*rand(1,2)-1,2,1) .* signos;  % Mezcla ortogonal
 
-for ss = 1
-    figure
-    for aa = 2
-        %% Mezclas de las dos fuentes
-        X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas de las dos fuentes 
-        
-        %% Blanqueo de las mezclas mediante PCA
-        [E, lambdas] = mipca(X);
-        % E: matriz cuyas columnas son los versores de las direcciones 
-        %    principales.
-        % lambdas: es un vector con los autovalores
-        
-        Dmenos1medio = diag( sqrt(lambdas.^(-1)) );%matriz con las inversas
-                                                   %de los lambdas en la 
-                                                   %diagonal principal
-        
-        Xmean = repmat( mean(X,2), 1, size(X,2) ); %media de las señales
-        
-        Z = Dmenos1medio * E'  * (X - Xmean);       %señales blanqueadas
-        
-        
-        %% Separación con FastICA
-        W = fastica(Z); % me devuelve la matriz de separación
-        Y = W * Z; % Proyecto los datos sobre las direcciones principales
-        
-        
-        subplot(2,2,1)
-        scatter(s{2*ss-1}, s{2*ss}); axis equal;
-        title({'Fuentes'})%;['columnas ' titort{aa}]} )
-        xlabel('s_1'); ylabel('s_2');
-        
-        subplot(2,2,2)
-        scatter(X(1,:), X(2,:)); axis equal;
-%         hold on; 
-%         x1m = mean(X(1,:));
-%         x2m = mean(X(2,:));
-%         plot(x1m + [0 5*W(1,1)],x2m + [0 5*W(1,2)], 'k','LineWidth',2)
-%         plot(x1m + [0 5*W(2,1)],x2m + [0 5*W(2,2)], 'k','LineWidth',2)
-%         hold off
-        title({'Mezclas'})%;['columnas ' titort{aa}]} )
-        xlabel('x_1'); ylabel('x_2');
-        
-        subplot(2,2,3)
-        scatter(Z(1,:), Z(2,:)); axis equal;
-        title({'Señales blanqueadas'})%;['columnas ' titort{aa}]} )
-        xlabel('y_1'); ylabel('y_2');
-        
-        
-        subplot(2,2,4)
-%         scatter(Y(1,:), Y(2,:)); axis equal;
-        title({'Señales separadas'})%;['columnas ' titort{aa}]} )
-        scatter(Y(1,:), Y(2,:)); axis equal;
-        xlabel('y_1'); ylabel('y_2');
-        
+% titort{1} = 'ortogonales';
+% titort{2} = 'no ortogonales';
+% suptit{1} = 'Fuentes gaussianas';
+% suptit{1} = 'Fuentes laplacianas';
+
+A{1} = (2*rand(2)-1);  % Mezcla no ortogonal
+A{1} = [0.6 0.8; 0.5 -0.2];
+
+ss = 1;
+aa = 1;
+
+% for ss = 1
+%     figure
+%     for aa = 2
+%% Mezclas de las dos fuentes
+X = mezclar(A{aa},s{2*ss-1},s{2*ss}); % Mezclas de las dos fuentes
+
+%% Blanqueo de las mezclas mediante PCA
+[E, lambdas] = mipca(X);
+% E: matriz cuyas columnas son los versores de las direcciones
+%    principales.
+% lambdas: es un vector con los autovalores
+
+Dmenos1medio = diag( sqrt(lambdas.^(-1)) );%matriz con las inversas
+%de los lambdas en la
+%diagonal principal
+
+Xmean = repmat( mean(X,2), 1, size(X,2) ); %media de las señales
+
+Z = Dmenos1medio * E'  * (X - Xmean);       %señales blanqueadas
+
+
+%% Separación con FastICA
+W = fastica(Z); % me devuelve la matriz de separación
+Z = Z  + W' * Xmean;
+Y = W' * Z; % Proyecto los datos sobre las direcciones principales
+
+%% Estimando P y D
+% Y = Y + W' * Xmean;
+
+
+
+%% Graficando
+
+
+subplot(2,2,1)
+scatter(s{2*ss-1}, s{2*ss}); axis equal;
+title({'Fuentes'})
+xlabel('s_1'); ylabel('s_2');
+
+
+
+
+
+
+% subplot(8,2,5)
+% plot(X(1,1:100)); ylim([-10, 10]);
+% ylabel('x_1');
+% 
+% subplot(8,2,7)
+% plot(X(2,1:100)); ylim([-10, 10]);
+% ylabel('x_2');
+
+subplot(2,2,2)
+scatter(X(1,:), X(2,:)); axis equal;
+title({'Mezclas'})
+xlabel('x_1'); ylabel('x_2');
+
+
+
+
+
+% subplot(8,2,9)
+% plot(Z(1,1:100)); ylim([-10, 10]);
+% ylabel('z_1');
+% 
+% subplot(8,2,11)
+% plot(Z(2,1:100)); ylim([-10, 10]);
+% ylabel('z_2');
+
+subplot(2,2,3)
+scatter(Z(1,:), Z(2,:)); axis equal;
+title({'Señales blanqueadas'})
+xlabel('z_1'); ylabel('z_2');
+
+
+
+subplot(2,2,4)
+scatter(Y(1,:), Y(2,:)); axis equal;
+title({'Señales separadas'})
+xlabel('y_1'); ylabel('y_2');
+
+
+
+
+
+figure
+subplot(2,2,1)
+plot(s{2*ss-1}(1:60)); ylim([-10, 10]);
+ylabel('s_1')
+
+subplot(2,2,2)
+plot(s{2*ss}(1:60)); ylim([-10, 10]);
+ylabel('s_2');
+
+subplot(2,2,3)
+plot(Y(1,1:60)); ylim([-10, 10]);
+ylabel('y_1');
+
+subplot(2,2,4)
+plot(Y(2,1:60)); ylim([-10, 10]);
+ylabel('y_2');
 %         A{aa}
 %         inv(A{aa})
 %         W
-    end
-%     suptitle(suptit{ss})
-end
+%     end
+% %     suptitle(suptit{ss})
+% end
 
 %%
 % En las gráficas se muestra cada una de las etapas requeridas. En las

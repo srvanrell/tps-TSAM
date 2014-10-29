@@ -1,5 +1,7 @@
 function [sepMat] = fastica( X )
-%ICA devuelve la matriz de separaci贸n W
+%ICA devuelve la matriz de separaci贸n sepMat
+% Los versores de la descomposici贸n se ubican como columnas en la matriz
+%
 % 
 % 
 % REVISAR!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -13,20 +15,22 @@ function [sepMat] = fastica( X )
 % principales. Las columnas son los versores de la nueva base.
 % autoval es un vector con los autovalores asociados, en orden decreciente.
 
-% Vector de descomposici髇
-wnuevo = 2*rand(2,1)-1; % inicializaci髇 aleatoria
+
+
+% Vector de descomposici锟絥
+wnuevo = 2*rand(2,1)-1; % inicializaci锟絥 aleatoria
 wnuevo = wnuevo ./ norm(wnuevo);
 w = [10; 10]; % valor para que entre en el while
-errorLimite = 1e-9; 
+errorLimite = 1e-6; 
 optimizando = 0;
 [N, M] = size(X); % N-dimensiones, M muestras
 
 for p = 1:N
-    error = 1; % inicia el ciclo de optimizaci髇
-    w(:,p) = rand(N,1)-0.5; % inicializaci髇 aleatoria de wp
+    error = 1;    % inicia el ciclo de optimizaci贸n
+    colineal = 0; % inicia el ciclo de optimizaci贸n
+    w(:,p) = 2*rand(N,1)-1; % inicializaci贸n aleatoria de wp
     
-    while error > errorLimite
-        % for i = 1:5
+    while (error > errorLimite) && ~colineal
         want = w(:,p);
         
         % G(y) = (1/a) * log cosh (ay)
@@ -34,18 +38,27 @@ for p = 1:N
         % gprima(y) = a(1-tanh(ay)^2)
         
         a = 1;
-        g = tanh(a * want' * X); % g es de tama駉 1 x M
-        gprima = a * (1 - tanh(a * want' * X).^2); % gprima es de tama駉 1 x M
+        g = ones(N,1) * tanh(a * want' * X) ; % g es de tama帽o N x M
+                                             % ones genera N filas iguales
+                                             % de g evaluada en cada
+                                             % a*want'*x
+        gprima = a * (1 - tanh(a * want' * X).^2); % gprima es de tama帽o 1 x M
         
-        % wnuevo = E[gprima(w'*x)]* w - E[g(w'*x)*x]
-        w(:,p) = -1 *( mean(gprima) * want - mean(X * g'));
+        % Expresion para cada muestra
+        % wnuevo = E[g(w'*x)*x] - E[gprima(w'*x)]*w
+        % Expresion usando el vector X de todas las muestras
+        w(:,p) = (-1) *(mean(g .* X, 2) - mean(gprima) * want);
+        
+%         size(X)
+%         size(g)
+%         size(g .* X)
+        
         % El valor esperado es estimado por el valor medio
         % X * g' es el equivalente de g(w'*x)*x considerando todos los
         % ejemplos, antes de sacar la media
         
         % se ortogonaliza respecto a las wp ya encontradas
         for j = 1:p-1
-            disp('entre')
             fprintf('antes = [%0.4f, %0.4f]. \n',w(:,p));
             w(:,p) = w(:,p) - (w(:,p)' * w(:,j)) * w(:,j);
             fprintf('despues = [%0.4f, %0.4f]. \n',w(:,p));
@@ -55,15 +68,19 @@ for p = 1:N
         w(:,p) = w(:,p) ./ norm(w(:,p));
         
         error = norm(w(:,p) - want);
+        colineal = (1 - abs(dot(want,w(:,p)))) < errorLimite;
+        
         fprintf('w = [%0.4f, %0.4f]. ',w(:,p));
         fprintf('El error es %f\n',error);
-        pause
+        fprintf('Es colineal: %f\n',colineal);
+%         pause
+
     end
-    pause
     fprintf('Encontre w%i = [%0.4f, %0.4f]. \n',p,w(:,p));
+%     pause
 end
 
-sepMat = cov(X');
+sepMat = w;
 
 end
 
