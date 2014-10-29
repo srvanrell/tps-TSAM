@@ -25,7 +25,7 @@ clc; close all; clear all;
 % señales separadas) dibuje un gráfico de dispersión de las variables.
 % # Luego de la separación obtenga la matriz $\mathbf{W}$ correspondiente.
 
-N = 10000;
+N = 1000;
 
 % Fuentes gaussianas y laplacianas 
 % s{1} = randgauss1D(1, 1, N)'; 

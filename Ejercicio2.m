@@ -1,12 +1,7 @@
 %% Ejercicio 2
 % Clasificación estadística de patrones.
-%%
-% 
-% # Sea un clasificador geométrico lineal definido por:
-% 
-% * asdasd
-% * asdas
-% * asdasdfa
+
+%% Grafica del clasificador lineal
 clc; close all; clear all;
 
 x1 = [-3 -1.5 0.5 -1.5 -3 ];
@@ -33,29 +28,53 @@ xlabel('x_1')
 ylabel('x_2')
 % legend('C_1', 'C_2', 'C_3', 'Location','EastOutside')
 
+
 %%
+%% Grafica del clasificador lineal
+clc; close all; clear all;
+
+xA = [-10 10 10];
+yA = [-10 -10 10];
+
+xB = [-10 10 -10];
+yB = [-10 10 10];
 
 % Genero la grilla
-% N = 100
-% x1 = linspace(-2,2,N);
-% x2 = linspace(-2,2,N);
-% for i = 1:N
-%     for j = 1:N
-%         g1(i,j) = - x1(i);
-%         g2(i,j) =   x1(i) + x2(j) -1;
-%         g3(i,j) =   x1(i) - x2(j) -1;
-%     end
-% end
-% 
-% hold on
-% surf(x1,x2,g1)
-% surf(x1,x2,g2)
-% surf(x1,x2,g3)
-% hold off
+N = 100;
+x1 = linspace(-10,10,N);
+x2 = linspace(-10,10,N);
+[X1, X2] = meshgrid(x1, x2);
+g1 = (X1 - 3).^2 + X2.^2;
+g2 = X1.^2 + (X2 -3).^2;
+
+hold on
+fill(xA,yA,.9 *[1 1 1])
+fill(xB,yB,.8 *[1 1 1])
+contour(X1,X2,max(g1,g2),'k')
+
+text([3 0], [0 3],{'A','B'})
+
+hold off
+axis square
+xlabel('x_1')
+ylabel('x_2')
+% legend('C_1', 'C_2', 'C_3', 'Location','EastOutside')
 
 
 
-figure
+%%
+clc; close all; clear all;
+
+% Genero la grilla
+N = 100;
+
+% contour(X1,X2,g2)
+xlabel('x_1'); ylabel('x_2')
+hold off
+
+
+
+
 %%
 % Cargo los datos (patrones con sus clases respectivas)
 data = load('gaussDATA.txt', '-ascii');

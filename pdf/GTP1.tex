@@ -55,7 +55,8 @@
 
 
 \author{Sebastián R. Vanrell\\[3em]}
-\title{{\Large Tópicos Selectos en Aprendizaje Maquinal}\\[3em]
+\title{{\large Curso:}\\\medskip
+       {\Large Tópicos Selectos en Aprendizaje Maquinal}\\[3em]
        \textsf{Guía de Trabajos Prácticos Nº1}\\\bigskip
        \textsf{Algoritmos para Reconocimiento de Patrones}\\[3em]}
 \date{Doctorado en Ingeniería\\\bigskip
@@ -108,9 +109,9 @@ Para graficar las regiones de decisión (Figura \ref{ejercicio21}) considero que
 \item $\mathbf{x} \in C_3 \;\; \mathrm{si} \;\; [g_3(\mathbf{x}) > g_1(\mathbf{x})] \wedge  [g_3(\mathbf{x}) > g_2(\mathbf{x})]$
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}[hb]
 	\centering
-	\includegraphics[width=.8\textwidth]{ejercicio21}
+	\includegraphics[width=.65\textwidth]{ejercicio21}
 	\caption{Regiones y fronteras del clasificador geométrico lineal.}
 	\label{ejercicio21}
 \end{figure}
@@ -143,7 +144,7 @@ Sean $A$ y $B$ dos clases de igual probabilidad a priori definidas por:
 
 \begin{description}
 \item[a)] Construya un clasificador gaussiano y encuentre la frontera.
-
+\end{description}
 Dado que se pretende construir un clasificador gaussiano las funciones discriminantes son las probabilidades a posteriori:
 \begin{itemize}
 \item $g_A(\mathbf{x})=P(A|\mathbf{x}) = P(\mathbf{x}|A) P(A) / P(\mathbf{x})$ y
@@ -151,11 +152,11 @@ Dado que se pretende construir un clasificador gaussiano las funciones discrimin
 \end{itemize} 
 Como $(P(A)/P(\mathbf{x}))=(P(B)/P(\mathbf{x}))$ es un factor constante que afecta por igual a ambas funciones discriminantes se pueden simplificar a:
 \begin{itemize}
-\item $g_A(\mathbf{x})= P(\mathbf{x}|A) = \mathcal{N}\left( 
+\item $g_A(\mathbf{x})= P(\mathbf{x}|A) = \mathcal{N}\left( {\boldsymbol \mu}_A,{\boldsymbol\Sigma}_A \right) = \mathcal{N}\left( 
 \left(\begin{matrix}3\\0 \end{matrix}\right) ,
 \left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
 \right)$ y
-\item $g_B(\mathbf{x})= P(\mathbf{x}|B) = \mathcal{N}\left( 
+\item $g_B(\mathbf{x})= P(\mathbf{x}|B) = \mathcal{N}\left( {\boldsymbol \mu}_B,{\boldsymbol\Sigma}_B \right) = \mathcal{N}\left( 
 \left(\begin{matrix}0\\3 \end{matrix}\right) ,
 \left(\begin{matrix}1 & 0\\0 & 1 \end{matrix} \right) 
 \right)$.
@@ -169,9 +170,11 @@ La expresión de la normal puede simplificarse aún más en este caso, sin pérd
 \[\frac{1}{\sqrt{(2\pi)^2}}
 \exp\left(-\frac{1}{2}({\mathbf x}-{\boldsymbol\mu})^T({\mathbf x}-{\boldsymbol\mu})
 \right)\]
-En segundo lugar, el factor que afecta a la exponencial es el mismo en ambas funciones. 
+En segundo lugar, el factor que afecta a la exponencial es el mismo en ambas funciones y puede eliminarse. 
 \[\exp\left(-\frac{1}{2}({\mathbf x}-{\boldsymbol\mu})^T({\mathbf x}-{\boldsymbol\mu})\right)\]
-En último lugar se aplica el logaritmo natural, función monótona creciente no afecta a la función cóncava original y se quita el factor constante 1/2.
+\[\exp\left(-\frac{1}{2}\parallel{\mathbf x}-{\boldsymbol\mu}\parallel^2
+\right)\]
+En último lugar se aplica el logaritmo natural, función que no altera las regiones de decisión, y se quita el factor constante 1/2.
 \[-\frac{1}{2}\parallel{\mathbf x}-{\boldsymbol\mu}\parallel^2\]
 \[-\parallel{\mathbf x}-{\boldsymbol\mu}\parallel^2 \]
 Entonces las funciones discriminantes resultan ser:
@@ -191,10 +194,17 @@ x_1^2 - 6 x_1 + 9 + x_2^2 &= x_1^2 + x_2^2 - 6 x_2 + 9\\
 x_1 &= x_2 
 \end{align*}
 
-
+\begin{description}
 \item[b)] Realice una representación gráfica del problema.
 \end{description}
+En la Figura \ref{ejercicio22} se muestra claramente la frontera de decisión (la recta) y la etiqueta de cada región. Las curvas representan las curvas de nivel de la función discriminante ganadora en cada región, a medida que se alejan de la recta van creciendo en valor.  
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale= .5]{ejercicio22}
+	\caption{Regiones y fronteras del clasificador gaussiano.}
+	\label{ejercicio22}
+\end{figure}
 
 %\begin{par}
 %Considere el sistema $H(z)=\frac{1-2z^{-1}+2z^{-2}-z^{-3}}{(1-z^{-1})(1-0.5z^{-2})(1-0.2z^{-3})}$
