@@ -75,14 +75,35 @@ Z = Dmenos1medio * E'  * (X - Xmean);       %señales blanqueadas
 
 %% Separación con FastICA
 W = fastica(Z); % me devuelve la matriz de separación
-Z = Z  + W' * Xmean;
+% Z = Z  + W' * Xmean;
 Y = W' * Z; % Proyecto los datos sobre las direcciones principales
 
 %% Estimando P y D
 % Y = Y + W' * Xmean;
+% Xmean(:,1)
+
+s1y1 = dot(s{2*ss-1}-mean(s{2*ss-1},2),Y(1,:)) ./ size(Y,2)
+s1y2 = dot(s{2*ss-1}-mean(s{2*ss},2),Y(2,:)) ./ size(Y,2)
+s2y1 = dot(s{2*ss}-mean(s{2*ss-1},2),Y(1,:)) ./ size(Y,2)
+s2y2 = dot(s{2*ss}-mean(s{2*ss},2),Y(2,:)) ./ size(Y,2)
+
+auxs1 = [s1y1, s1y2]
+auxs2 = [s2y1, s2y2]
+[~, s1max] = max(abs(auxs1))
+[~, s2max] = max(abs(auxs2))
+
+P = zeros(2) ;
+P(1,s1max) = 1;
+P(2,s2max) = 1;
+P
+
+D = zeros(2);
+D(1,1) = auxs1(s1max);
+D(2,2) = auxs2(s2max);
+D
 
 
-
+Srecup = D * P * Y;
 %% Graficando
 
 
@@ -138,21 +159,43 @@ xlabel('y_1'); ylabel('y_2');
 
 
 figure
-subplot(2,2,1)
+subplot(3,2,1)
 plot(s{2*ss-1}(1:60)); ylim([-10, 10]);
 ylabel('s_1')
 
-subplot(2,2,2)
+subplot(3,2,2)
 plot(s{2*ss}(1:60)); ylim([-10, 10]);
 ylabel('s_2');
 
-subplot(2,2,3)
+% subplot(2,2,1)
+% plot(X(1,1:60)); ylim([-10, 10]);
+% ylabel('x_1');
+% 
+% subplot(2,2,2)
+% plot(X(2,1:60)); ylim([-10, 10]);
+% ylabel('x_2');
+
+subplot(3,2,3)
 plot(Y(1,1:60)); ylim([-10, 10]);
 ylabel('y_1');
 
-subplot(2,2,4)
+subplot(3,2,4)
 plot(Y(2,1:60)); ylim([-10, 10]);
 ylabel('y_2');
+
+
+subplot(3,2,5)
+plot(Srecup(1,1:60)); ylim([-10, 10]);
+ylabel('s.recup_1');
+
+subplot(3,2,6)
+plot(Srecup(2,1:60)); ylim([-10, 10]);
+ylabel('s.recup_2');
+
+
+
+
+
 %         A{aa}
 %         inv(A{aa})
 %         W
