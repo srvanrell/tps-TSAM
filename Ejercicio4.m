@@ -79,7 +79,7 @@ W = fastica(Z); % me devuelve la matriz de separación
 Y = W' * Z; % Proyecto los datos sobre las direcciones principales
 
 %% Estimando P y D
-% Y = Y + W' * Xmean;
+
 % Xmean(:,1)
 
 s1y1 = dot(s{2*ss-1}-mean(s{2*ss-1},2),Y(1,:)) ./ size(Y,2)
@@ -102,6 +102,7 @@ D(1,1) = auxs1(s1max);
 D(2,2) = auxs2(s2max);
 D
 
+% Y = Y + W' *  Xmean;
 
 Srecup = D * P * Y;
 %% Graficando
