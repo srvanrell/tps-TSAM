@@ -105,6 +105,12 @@ D
 % Y = Y + W' *  Xmean;
 
 Srecup = D * P * Y;
+
+
+% TODO invertir la forma de calcular P y D, en vez de de ver cómo llevar de
+% las señales recuperadas a las fuentes tengo que ver como llevo las
+% fuentes a las señales recuperadas!!!!
+
 %% Graficando
 
 
