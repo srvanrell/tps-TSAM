@@ -106,6 +106,7 @@ B = [0.75 0.4;
 %% 2
 %
 clear all; close all; clc
+
 % Matriz de probabilidades de transición
 A = [0.7 0.3;  % (lluvioso->lluvioso  lluvioso->soleado)
      0.6 0.4]; % ( soleado->lluvioso   soleado->soleado)
@@ -123,6 +124,7 @@ B = [0.1 0.6;  % (caminar@lluvioso  caminar@soleado)
 
 Nsec = 10;
 
-[sec, est] = generarMOMSec(A,B,pi0,Nsec);
+[sec, est] = generarMOMSec(A,B,pi0,Nsec)
 
- 
+%%
+[secMasProb, prob] = viterbi(sec,A,B,pi0)
