@@ -10,20 +10,20 @@ A = [0.7 0.3;
      0.6 0.4];
 
 % Probabilidades iniciales
-pi0 = [0.6 0.4];
+PI = [0.6 0.4];
 
-Nmuestras = 10;
-Nsecuencias = 100;
-sec = zeros(Nsecuencias,Nmuestras);
+nMuestras = 10;
+nObservaciones = 100;
+observaciones = zeros(nObservaciones,nMuestras);
 
 %% a) y b)
 
-for s = 1:Nsecuencias
-    sec(s,:) = generarSec(A,pi0,Nmuestras);  
+for s = 1:nObservaciones
+    observaciones(s,:) = generarSec(A,PI,nMuestras);  
 end
 
 figure
-plot(sec','d-'); axis tight;
+plot(observaciones','d-'); axis tight;
 ylim([0.8 2.2])
 set(gca,'YTick', [1, 2]) 
 set(gca,'YTickLabel', {'lluvioso','soleado'});
@@ -36,10 +36,10 @@ gammai = zeros(2,1); % contador de visitas el estado i
 gammaij = zeros(2);  % contador de veces que se saltó del estado i al j
 
 
-for s = 1:Nsecuencias
-    for n = 1:Nmuestras-1
-        i = sec(s,n);   % estado actual
-        j = sec(s,n+1); % estado siguiente
+for s = 1:nObservaciones
+    for n = 1:nMuestras-1
+        i = observaciones(s,n);   % estado actual
+        j = observaciones(s,n+1); % estado siguiente
         gammai(i) = gammai(i) + 1; % visitas al estado i
         gammaij(i,j) = gammaij(i,j) + 1; % saltos de i a j
     end
@@ -47,7 +47,7 @@ end
 
 % estimación de comenzar en un estado u otro
 % numSecuenciasQueArrancanEnEstadoi / NumSecuecuencias
-pi0est = [sum(sec(:,1)==1) sum(sec(:,1)==2)] ./ Nsecuencias
+PIest = [sum(observaciones(:,1)==1) sum(observaciones(:,1)==2)] ./ nObservaciones
 
 Aest = zeros(size(A));
 Aest(1,:) = gammaij(1,:) / gammai(1);
@@ -73,7 +73,7 @@ Aest
 % cantidad de secuencias se tengan.
 
 errorAest = abs(Aest - A)
-errorpiiniest = abs(pi0est - pi0)
+errorPIest = abs(PIest - PI)
 
 
 %% c) continuación
@@ -99,7 +99,7 @@ B = [0.75 0.4;
 % era un día soleado.
 
 
-[sec, est] = generarMOMSec(A,B,pi0,Nmuestras)
+[observaciones, est] = generarMOMSec(A,B,PI,nMuestras)
 
 
 
@@ -112,19 +112,98 @@ A = [0.7 0.3;  % (lluvioso->lluvioso  lluvioso->soleado)
      0.6 0.4]; % ( soleado->lluvioso   soleado->soleado)
 
 % Probabilidades iniciales
-pi0 = [0.6 0.4]; % (lluvioso, soleado)
+PI = [0.6 0.4]; % (lluvioso, soleado) % llamado pi en el enunciado
 
 % Matriz de observación
 B = [0.1 0.6;  % (caminar@lluvioso  caminar@soleado)
      0.4 0.3;  % (comprar@lluvioso  comprar@soleado)
      0.5 0.1]; % (  museo@lluvioso    museo@soleado)
 
-%% a)
+% a)
 % genero secuencia larga
 
-Nsec = 10;
+Nsec = 1000;
 
-[sec, est] = generarMOMSec(A,B,pi0,Nsec)
+[observaciones, secEst] = generarMOMSec(A,B,PI,Nsec);
 
-%%
-[secMasProb, prob] = viterbi(sec,A,B,pi0)
+[secMasProb, prob] = viterbi(observaciones,A,B,PI);
+[secMasProb2, prob2] = logviterbi(observaciones,A,B,PI);
+[secMasProb3, prob3] = hmmviterbi(observaciones,A,B');
+
+errores = (secEst ~= secMasProb);
+errores2 = (secEst ~= secMasProb2);
+errores3 = (secEst ~= secMasProb3);
+
+errorReconocimiento = 100 * sum(errores) / Nsec;
+fprintf('La secuencia encontrada con viterbi difiere de la real en un %0.2f %%\n', ...
+        errorReconocimiento)
+    
+errorReconocimiento2 = 100 * sum(errores2) / Nsec;
+fprintf('La secuencia encontrada con log viterbi difiere de la real en un %0.2f %%\n', ...
+        errorReconocimiento2)
+
+errorReconocimiento3 = 100 * sum(errores3) / Nsec;
+fprintf('La secuencia encontrada con hmmviterbi difiere de la real en un %0.2f %%\n', ...
+        errorReconocimiento3)
+
+figure
+plot(secEst,'ok');
+hold on; 
+plot(secMasProb,'.r');
+plot(secMasProb2,'+g');
+plot(secMasProb3,'db');
+plot(find(errores),0.9,'dr');
+plot(find(errores2),0.85,'dg');
+plot(find(errores3),0.8,'*b');
+hold off;
+axis tight;
+ylim([0.8 2.2])
+set(gca,'YTick', [1, 2]) 
+set(gca,'YTickLabel', {'lluvioso','soleado'});
+
+legend('real','estimada','errores','Location','East')
+
+
+%% 
+% implemente viterbi y viterbi manejando las probabilidades con logaritmos
+% Con logaritmos las secuencias largas obtienen mejores reconocimientos,
+% porque no se acumulan los errores de las probabilidades muy chicas.
+
+%% b)
+% Repito las matrices pero despues se pueden borrar
+clear all; close all; clc
+% Matriz de probabilidades de transición
+A = [0.7 0.3;  % (lluvioso->lluvioso  lluvioso->soleado)
+     0.6 0.4]; % ( soleado->lluvioso   soleado->soleado)
+
+% Probabilidades iniciales
+PI = [0.6 0.4]; % (lluvioso, soleado) % llamado pi en el enunciado
+
+% Matriz de observación
+B = [0.1 0.6;  % (caminar@lluvioso  caminar@soleado)
+     0.4 0.3;  % (comprar@lluvioso  comprar@soleado)
+     0.5 0.1]; % (  museo@lluvioso    museo@soleado)
+ 
+
+nMuestras = 500;
+nObservaciones = 100;
+observaciones = zeros(nObservaciones,nMuestras);
+estados = zeros(nObservaciones,nMuestras);
+
+for s = 1:nObservaciones
+    [observaciones(s,:) estados(s,:)] = generarMOMSec(A,B,PI,nMuestras);  
+end
+
+[Aest1, Best1, PIest1] = estimarMOMconViterbiPrueba(observaciones,2,estados)
+
+[Aest2, Best2, PIest2, Aini2, Bini2] = estimarMOMconViterbi(observaciones,2);
+Aest2 = Aest2
+Best2 = Best2
+
+[Aest3, Best3] = hmmtrain(observaciones,Aini2,Bini2','Algorithm','Viterbi');
+Aest3 = Aest3
+Best3 = Best3'
+
+[Aest4, Best4, PIest4] = estimarMOMconViterbiDesacop(observaciones,2)
+%% 
+% No esta funcionando ninguno muy bien
