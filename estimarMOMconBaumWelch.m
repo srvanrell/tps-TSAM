@@ -12,7 +12,7 @@ function [A, B, PI, Aini, Bini] = estimarMOMconBaumWelch( observaciones, nEstado
 % nEstados y de la cantidad de s√≠mbolos observables (presentes en las 
 % observaciones).
 if nargin < 3
-    iterMax = 1000;
+    iterMax = 100;
 end
 
 % La cantidad de s√≠mbolos observables se define a partir de las secuencias.
@@ -21,22 +21,26 @@ nSimbolos = length(unique(observaciones));
 nObservaciones = size(observaciones,1);
 nTiempos = size(observaciones,2);
 
+
+A = 0; B = 0; PI = 0;% inicializaciÛn temporal ara entrar al while
 % inicializacion aleatoria
-A = rand(nEstados);
-B = rand(nSimbolos,nEstados);
-for i = 1:nEstados
-    A(i,:) = A(i,:) / sum(A(i,:));
-    B(:,i) = B(:,i) / sum(B(:,i));
+while ~isempty(find([A; B; PI] == 0, 1)) % me fijo que no haya ceros
+    A = rand(nEstados);
+    B = rand(nSimbolos,nEstados);
+    for i = 1:nEstados
+        A(i,:) = A(i,:) / sum(A(i,:));
+        B(:,i) = B(:,i) / sum(B(:,i));
+    end
+    PI = rand(1,nEstados);
+    PI = PI ./ sum(PI);
 end
-PI = rand(1,nEstados);
-PI = PI ./ sum(PI);
 
 Aini = A;
 Bini = B;
 
-errorMax = 0.2;
-error = 100;
-iter = 0;
+% errorMax = 0.2;
+% error = 100;
+% iter = 0;
 
 % while (error>errorMax) && (iter < iterMax)
 %     iter = iter + 1;
@@ -46,8 +50,9 @@ iter = 0;
     
     % Me guio del Hidden Markov Models for Speech Recognition (Huang, Ariki, Jack. 1990)
     
-    %% TODO pasar a todas las observaciones
-    obs = observaciones(1,:); % primera observacion
+%% Para cada secuencia observada calculo gammatij y gammati
+for n = 1:nObservaciones
+    obs = observaciones(n,:); % primera observacion
     
     %% Calculo hacia adelante
     %% Paso 1: en tiempo inicial
@@ -59,11 +64,11 @@ iter = 0;
     for t = 2:nTiempos % en cada instante de tiempo t
         for j = 1:nEstados % para todos los estados j
             % la sumatoria es para sobre todos los estados anteriores i
-            alfa(t,j) = sum(alfa(t-1,:) .* A(:,j))*B(obs(t),j); % la suma es inutil pero la utilizo para chequear
-         end
+            alfa(t,j) = sum( alfa(t-1,:)' .* A(:,j) ) * B(obs(t),j); 
+        end
     end
     %% Paso 3: calculando la probabilidad final
-    probFinalalfa = sum(alfa(nTiempos,:));
+%     probFinalalfa = sum(alfa(nTiempos,:));
     
     
     
@@ -78,15 +83,14 @@ iter = 0;
         for j = 1:nEstados % para todos los estados j
             % la sumatoria es para sobre todos los estados anteriores i
             beta(t,j) = sum(A(:,j)' .* B(obs(t+1),:) .* beta(t+1,:)); % la suma es inutil pero la utilizo para chequear
-         end
+        end
     end
     %% Paso 3: calculando la probabilidad final
-    t = 1;
-    probFinalbeta = sum(PI' .* B(obs(t),:) .* beta(t,:));
+%     t = 1;
+%     probFinalbeta = sum(PI' .* B(obs(t),:) .* beta(t,:));
     
-    
-    
-    
+
+
     %% Baum-Welch propiamente dicho
     
 %     % Contadores para realizar las estimaciones de A
@@ -97,95 +101,74 @@ iter = 0;
     for t = 1:nTiempos-1 % REVISAR -1
         for i = 1:nEstados % para todos los estados i
             for j = 1:nEstados % para todos los estados j
-                gammatij(t,i,j) = alfa(t,i) * A(i,j) * B(obs(t+1),j) * beta(t+1,j) / ...
-                                  sum(A(alfa(nTiempos,:)))
+                gammatij(t,i,j,n) = alfa(t,i) * A(i,j) * B(obs(t+1),j) * ...
+                    beta(t+1,j) / sum(alfa(nTiempos,:));
+                % suma sobre los k estados en el ultimo instante de tiempo nTiempos
             end
         end
     end
+    
+    for t = 1:nTiempos % REVISAR
+        for i = 1:nEstados % para todos los estados i
+                 gammati(t,i,n) = alfa(t,i) * beta(t,i) / ...
+                                  sum(alfa(nTiempos,:));
+                              % suma sobre los k estados en el ultimo
+                              % instante de tiempo nTiempos
+        end
+    end
+    % Forma alternativa de calcular gammati dada en pagina 154 de Huang1990
+    gammatiAlternativa(nTiempos,:,n) = gammati(nTiempos,:,n);
+    gammatiAlternativa(1:nTiempos-1,:,n) = sum(gammatij(:,:,:,n),3); % la tercera dimension es j 
+    
+    
+    
+        % las siguientes deberÌan ser iguales
+    probAposterioriAlfa = sum(alfa(nTiempos,:));
+    probAposterioriBeta = sum(PI .* B(obs(1),:) .* beta(1,:));
+    tarb = 5; % t arbitrario
+    probAposterioriAlfaBeta = sum(alfa(tarb,:) .* beta(tarb,:));
+    
+    [probAposterioriAlfa, probAposterioriBeta, probAposterioriAlfaBeta]
+end
+    %% hasta antes de aca deberÌa contemplar todas las observaciones
+    
+    %% reestimaciÛn de A (aij)
+    for i = 1:nEstados % para todos los estados i
+        for j = 1:nEstados % para todos los estados j
+            A(i,j) = sum(sum(gammatij(:,i,j,:),1)) / sum(sum(gammati(1:nTiempos-1,i,:),1));
+            % La expresiÛn anterior corresponde a la ecuacion 5.3.17 de
+            % Huang1990, en pagina 158
+            % la suma interna suma sobre t y la suma externa sobre n 
+        end
+    end
+    
+    
+    %% reestimaciÛn de B (bij)
+    for k = 1:nSimbolos % para todos los simbolos posibles
+        for j = 1:nEstados % para todos los estados j
+            B(k,j) = 0;
+            for n = 1:nObservaciones
+                obs = observaciones(n,:);
+                B(k,j) = B(k,j) + sum(gammati(obs == k,j,n));
+            end
+            B(k,j) = B(k,j) / sum(sum(gammati(1:nTiempos,j,:),1));
+            % La expresiÛn anterior corresponde a la ecuacion 5.3.18 de
+            % Huang1990, en pagina 158
+            % en el numerador la suma sobre n est· hecha explÌcita con el for
+            % en el denominador la suma interna suma sobre t y la suma externa sobre n
+        end
+    end
+    
+    %% reestimaciÛn de PI (pii)
+    PI = sum(gammati(1,:,:), 3) / sum(sum(gammati(1,:,:), 3)); 
+         % la suma sobre la segunda dimension 
+                                 % corresponde a n, la cantidad de 
+                                 % observaciones
 
-%     
-%     
-%     
-%     % Para cada secuencia se estima la secuencia de estado m√°s probable dadas
-%     % A, B y PI
-%     secEstMasProb = zeros(size(observaciones));
-%     nSecEstMasProb = nObservaciones;
-%     
-%     for obs = 1:nObservaciones
-%         secEstMasProb(obs,:) = logviterbi(observaciones(obs),A,B,PI);
-%     end
-%     
-%     
-    
-    % Contadores para realizar las estimaciones de A
-    gammai = zeros(nEstados,1); % contador de visitas el estado i
-    gammaij = zeros(nEstados);  % contador de veces que se salt√≥ del estado i al j
-    
-    for sec = 1:nSecEstMasProb
-        for t = 1:(nTiempos-1)
-            i = secEstMasProb(sec,t);           % estado actual
-            j = secEstMasProb(sec,t+1);         % estado siguiente
-            gammai(i) = gammai(i) + 1;          % visitas al estado i
-            gammaij(i,j) = gammaij(i,j) + 1;    % saltos de i a j
-        end
-    end
-    % gammai no cuenta el √∫ltimo estado porque desde ese estado no se realiza
-    % ning√∫n salto y gammaij estar√≠a contando una vez menos que gammai
-    % es decir, se estar√≠a sesgando la estimaci√≥n de A
-    
-    
-    gammaj = zeros(nEstados,1); % contador de visitas el estado j
-    deltaj = zeros(nSimbolos,nEstados); % contador de veces que emitio el simbolo k en el estado j
-    for sec = 1:nSecEstMasProb
-        for t = 1:nTiempos
-            j = secEstMasProb(sec,t);       % estado en tiempo t
-            k = observaciones(sec,t);       % simbolo k observado en tiempo t, estando en el estado j
-            gammaj(j) = gammai(j) + 1;      % cuenta visitas al estado j
-            deltaj(k,j) = deltaj(k,j) + 1;  % cuenta observaciones de k estando en el estado j
-        end
-    end
-    
-    
-    
-    %% TODO est√° bastante confuso, ver si se puede hacer de otra manera, es una cuenta al fin de cuentas
-    
-    % replica la lista de estados iniciales, una al lado de la otra, tantas
-    % veces como estados haya
-    auxEstInicial = repmat(secEstMasProb(:,1), 1, nEstados);
-    % cada columna sirve de comparacion para la matriz anterior, cada columna
-    % repite un estado como tantas secuencias haya
-    auxEstados = repmat([1:nEstados], nSecEstMasProb, 1);
-    
-    
-    % Si gammai o gammaj tienen alg√∫n cero arranco otra vez
-    if any(gammai == 0) || any(gammaj == 0)
-        % inicializacion aleatoria
-        A = rand(nEstados);
-        B = rand(nSimbolos,nEstados);
-        for i = 1:nEstados
-            A(i,:) = A(i,:) / sum(A(i,:));
-            B(:,i) = B(:,i) / sum(B(:,i));
-        end
-        PI = rand(1,nEstados);
-        PI = PI ./ sum(PI);
-    else
-        % estimaci√≥n del vector de estado inicial
-        % numSecuenciasQueArrancanEnEstadoi / NumSecuecuencias
-        PI = sum(auxEstInicial == auxEstados,1) ./ nSecEstMasProb;
-        
-        
-        % estimaci√≥n de A
-        for i = 1:nEstados
-            A(i,:) = gammaij(i,:) / gammai(i);
-        end
-        
-        % estimaci√≥n de B
-        for j = 1:nEstados
-            B(:,j) = deltaj(:,j) / gammaj(j);
-        end
-        % podria estimar A y B en el mismo for pero asi queda m√°s claro
-    end
-    
+
+
+
+   
 %     errorA(iter) = norm(A-Aant);
 %     errorB(iter) = norm(B-Bant);
 %     errorPI(iter) = norm(PI-PIant);
@@ -199,6 +182,6 @@ iter = 0;
 %     B=B
 %     C=B
 % end
-disp(iter)
-plot(errorTot)
+% disp(iter)
+% plot(errorTot)
 end

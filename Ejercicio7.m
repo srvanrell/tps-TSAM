@@ -207,3 +207,11 @@ Best3 = Best3'
 [Aest4, Best4, PIest4] = estimarMOMconViterbiDesacop(observaciones,2)
 %% 
 % No esta funcionando ninguno muy bien
+clc;
+[Aest5, Best5, PIest5,Aini5,Bini5] = estimarMOMconBaumWelch(observaciones,2)
+
+% no está normalizando bien A !!!!
+
+[Aest6, Best6] = hmmtrain(observaciones,Aini5,Bini5');
+Aest6 = Aest6
+Best6 = Best6'
