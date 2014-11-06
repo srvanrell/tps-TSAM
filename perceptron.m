@@ -1,4 +1,4 @@
-function [y, w] = perceptron( X, yd, alfa, tolerancia, iterMax)
+function [w, y] = perceptron( X, yd, alfa, tolerancia, iterMax)
 %UNTITLED6 Summary of this function goes here
 %   X son las caracteristicas, cada ejemplo en un renglon
 %   yd es la salida deseada, la clase de cada ejemplo
@@ -33,9 +33,8 @@ while (error > tolerancia) && (iter < iterMax)
     end
     error = norm(yd-y) / N;
 end
-iter
 
-%Encontrado w actualizo las clases predichas
+%Encontrado w actualizo las clases predichas para el entrenamiento
 for n = 1:N
     y(n) = sign( dot( w, Xbias(n,:) ) );% salida del perceptron para el ejemplo X(j)
 end
