@@ -91,6 +91,15 @@ axis equal
 hold off
 
 
+%% 4
+% Implemente el algoritmo de las redes neuronales funcion de base radial
+
+w = redfuncbaserad(xentre, etientre);
+
+% x1test = xtest(etikvec == eti1(1),:);
+% x2test = xtest(etikvec == eti2(1),:);
+
+
 %% 5
 % Implemente el algoritmo de los k-vecinos más cercanos
 k = 10;

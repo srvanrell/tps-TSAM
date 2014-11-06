@@ -5,6 +5,7 @@ function [w, y] = perceptron( X, yd, alfa, tolerancia, iterMax)
 %   alfa el coeficiente de aprendizaje
 %   tolerancia de error admitida durante el entrenamiento
 %   w es el vector de pesos aprendidos, el primer elemento es del bias, w0
+%   y es el resultado de la clasificación de los patrones de entrenamiento 
 if nargin < 3
     alfa = 0.05; % coef de aprendizaje
 end
@@ -28,16 +29,13 @@ iter = 0;
 while (error > tolerancia) && (iter < iterMax)
     iter = iter + 1;
     for n = 1:N
-        y(n) = sign( dot( w, Xbias(n,:) ) );% salida del perceptron para el ejemplo X(j)
+        y(n) = sign( dot( w, Xbias(n,:) ) );% salida del perceptron para el patron X(j)
         w = w + alfa * (yd(n) - y(n)) * Xbias(n,:); % ajuste de w, si d ~= y
     end
     error = norm(yd-y) / N;
 end
 
-%Encontrado w actualizo las clases predichas para el entrenamiento
-for n = 1:N
-    y(n) = sign( dot( w, Xbias(n,:) ) );% salida del perceptron para el ejemplo X(j)
-end
+% Actualizo la clasificacion para los patrones de entrenamiento
+y = sign(Xbias * w');
 
 end
-
