@@ -41,6 +41,11 @@
 \usepackage{tikz}
 \usetikzlibrary{plotmarks} % para plotear las graficas que vienen de Matlab
             
+%\usepackage{color}
+%
+%\sloppy
+\definecolor{lightgray}{gray}{0.8} % para la grafica 2.3
+
 %---------------------------------------------------------------------------------
 % DEPRECATED COMMANDS
 %---------------------------------------------------------------------------------  
@@ -205,6 +210,240 @@ En la Figura \ref{ejercicio22} se muestra claramente la frontera de decisión (l
 	\caption{Regiones y fronteras del clasificador gaussiano.}
 	\label{ejercicio22}
 \end{figure}
+
+
+\clearpage
+
+
+\subsection{Ejercicio 2.3}
+
+Implemente un clasificador gaussiano por ML para el mini-corpus de muestras proporcionado, realizando una representación gráfica de la situación:
+
+\begin{description}
+\item[a)] Clasifique los datos del conjunto de entrenamiento y calcule la tasa de aciertos.
+
+\item[b)] A partir de los parámetros obtenidos genere nuevos datos de prueba, clasifíquelos y compare con el resultado anterior.
+\end{description}
+
+\begin{verbatim}
+% Cargo los datos (patrones con sus clases respectivas)
+data = load('gaussDATA.txt', '-ascii'); % cargo los datos
+x = data(:,1:2); % patrones
+c = data(:,3);   % identificador de clase
+N = length(c);   % cantidad de ejemplos
+
+c1 = find(c== 1); % indices de clase 1
+c2 = find(c== 2); % indices de clase 2
+c3 = find(c== 3); % indices de clase 3
+c4 = find(c== 4); % indices de clase 4
+
+hold on
+plot(x(c1,1), x(c1,2), 'ok')
+plot(x(c2,1), x(c2,2), 'xk')
+plot(x(c3,1), x(c3,2), 'dk')
+plot(x(c4,1), x(c4,2), 'sk')
+hold off
+
+xlabel('x_1'); ylabel('x_2');
+legend('clase 1','clase 2','clase 3','clase 4')
+title('Distribución de los patrones separados por clase')
+\end{verbatim}
+
+\begin{figure}
+\includegraphics [width=0.9\textwidth]{Ejercicio2_01.png}
+\caption{Distribución de los patrones del mini-corpus indicando la clase de cada uno.}
+\label{fig:ejercicio231}
+\end{figure}
+
+
+Por la gráfica de la Figura \ref{fig:ejercicio231} se deduce que deberán utilizarse gaussianas con media desconocida y covarianza no isotrópica desconocida. Separo los patrones de entrenamiento para estimar las medias y matrices de covarianzas de cada clase.
+
+\begin{verbatim}
+% Divido los patrones a utilizar en el entrenamiento de los de testeo
+nentre = floor(0.8 * N); % 80% de los patrones para entrenamiento
+ntest = N - nentre;      % 20% de los patrones para testeo
+ientre = randperm(N,nentre); % indices utilizados en el entrenamiento
+itest = setdiff(1:N,ientre); % indices utilizados para el testeo
+
+% Estimación de los parámetros para cada clase, con los patrones de
+% entrenamiento
+% medias estimadas
+u1 = mean(x(intersect(c1,ientre),:));
+u2 = mean(x(intersect(c2,ientre),:));
+u3 = mean(x(intersect(c3,ientre),:));
+u4 = mean(x(intersect(c4,ientre),:));
+% matrices de covarianzas estimadas
+sig1 = cov(x(intersect(c1,ientre),:));
+sig2 = cov(x(intersect(c2,ientre),:));
+sig3 = cov(x(intersect(c3,ientre),:));
+sig4 = cov(x(intersect(c4,ientre),:));
+
+% clasifico los patrones de entrenamiento
+centre = zeros(size(c)); % clases asignadas durante el entrenamiento
+for n = ientre
+    xn = x(n,:); % voy leyendo de a un dato
+
+    % Calculo los valores de las funciones discriminantes para xn
+    g1 = mvnpdf(xn, u1, sig1);
+    g2 = mvnpdf(xn, u2, sig2);
+    g3 = mvnpdf(xn, u3, sig3);
+    g4 = mvnpdf(xn, u4, sig4);
+
+    % Busco cual es la clase ganadora, asigno 0 si cae en la frontera
+    if     g1 > max([g2 g3 g4])
+        centre(n) = 1;
+    elseif g2 > max([g1 g3 g4])
+        centre(n) = 2;
+    elseif g3 > max([g1 g2 g4])
+        centre(n) = 3;
+    elseif g4 > max([g1 g2 g3])
+        centre(n) = 4;
+    else
+        centre(n) = 0;
+    end
+end
+
+% busco cuales patrones fueron confundidos al clasificar
+cmal = intersect(find(c~=centre), ientre); % patrones mal identificados
+cbien = setdiff(ientre,cmal); % patrones identificados correctamente
+
+fprintf('La tasa de aciertos en el entrenamiento es de %0.2f %%\n', ...
+        100*length(cbien)/nentre);
+% disp(['La tasa de aciertos es de ' num2str(100*nnz(cright)/N) '%'])
+
+hold on; plot(x(cmal,1), x(cmal,2), '.r'); hold off
+\end{verbatim}
+
+%\begin{figure}[h]
+%\includegraphics [width=0.9\textwidth]{Ejercicio2_02.png}
+%\caption{Los patrones indicados con puntos rojos fueron clasificados incorrectamente durante el entrenamiento.}
+%\label{fig:ejercicio232}
+%\end{figure}
+
+En el entrenamiento se utilizaron el 80\% de los patrones de la Figura \ref{fig:ejercicio233}. Aquellos indicados con puntos rojos fueron clasificados incorrectamente durante el entrenamiento. Considerando sólo los patrones de entrenamiento se obtuvo el siguiente reporte:
+
+\color{lightgray} \begin{verbatim}La tasa de aciertos en el entrenamiento es de 87.27 %
+\end{verbatim} \color{black}
+
+Ahora se clasifican los patrones para testeo y se calcula la tasa de reconocimiento.
+
+\begin{verbatim}
+% clasifico los patrones de testeo
+% --------------------------------
+ctest = zeros(size(c)); % clases asignadas durante el testeo
+for n = itest
+    xn = x(n,:); % voy leyendo de a un dato
+
+    % Calculo los valores de las funciones discriminantes para xn
+    g1 = mvnpdf(xn, u1, sig1);
+    g2 = mvnpdf(xn, u2, sig2);
+    g3 = mvnpdf(xn, u3, sig3);
+    g4 = mvnpdf(xn, u4, sig4);
+
+    % Busco cual es la clase ganadora, asigno 0 si cae en la frontera
+    if     g1 > max([g2 g3 g4])
+        ctest(n) = 1;
+    elseif g2 > max([g1 g3 g4])
+        ctest(n) = 2;
+    elseif g3 > max([g1 g2 g4])
+        ctest(n) = 3;
+    elseif g4 > max([g1 g2 g3])
+        ctest(n) = 4;
+    else
+        ctest(n) = 0;
+    end
+end
+
+% busco cuales patrones fueron confundidos al clasificar
+cmal = intersect(find(c~=ctest), itest); % patrones mal identificados
+cbien = setdiff(itest,cmal); % patrones identificados correctamente
+
+fprintf('La tasa de aciertos en el testeo es de %0.2f %%\n', ...
+        100*length(cbien)/ntest);
+
+hold on; plot(x(cmal,1), x(cmal,2), '*b'); hold off
+\end{verbatim}
+
+\begin{figure}[h]
+\includegraphics [width=0.9\textwidth]{Ejercicio2_03.png}
+\caption{Los patrones indicados con puntos rojos fueron clasificados incorrectamente durante el entrenamiento, y los indicados con asteriscos azules durante el testeo.}
+\label{fig:ejercicio233}
+\end{figure}
+
+En el testeo se utilizaron el 20\% restante de los patrones de la Figura \ref{fig:ejercicio233}. Los indicados con asteriscos azules fueron clasificados incorrectamente. Luego del testeo se obtuvo el siguiente reporte:
+
+\color{lightgray} \begin{verbatim}La tasa de aciertos en el testeo es de 78.57 %
+\end{verbatim} \color{black}
+    
+Por último se realizó una gráfica (Figura \ref{fig:ejercicio234}) representativa de las regiones definidas durante el entrenamiento.
+
+\begin{verbatim}
+T = 100;
+x1 = linspace(-2,10,T);
+x2 = linspace(-4,8,T);
+[X1,X2] = meshgrid(x1,x2);
+for i = 1:T
+    for j = 1:T
+        xn = [x1(i) x2(j)];
+        gc1(i,j) = mvnpdf(xn, u1, sig1);
+        gc2(i,j) = mvnpdf(xn, u2, sig2);
+        gc3(i,j) = mvnpdf(xn, u3, sig3);
+        gc4(i,j) = mvnpdf(xn, u4, sig4);
+    end
+end
+
+gc1234 = cat(3, gc1, gc2, gc3, gc4);
+
+[maxg, maxc] = max(gc1234,[],3);
+
+figure
+grises = linspace(0.7,0.9,64);
+colormap(repmat(grises',1,3))
+surf(X1,X2,maxc'-4,'EdgeColor','none')
+hold on; contour(X1,X2,maxg',5,'k'); hold off;
+view(2); axis square
+xlabel('x_1'); ylabel('x_2');
+title('Regiones de decisión')
+
+text([u1(1) u2(1) u3(1) u4(1)], [u1(2) u2(2) u3(2) u4(2)],...
+    {'C_1','C_2','C_3','C_4'})
+\end{verbatim}
+
+\begin{figure}[h]
+\includegraphics [width=0.9\textwidth]{Ejercicio2_04.png}
+\caption{Regiones de decisión utilizadas para clasificar. Las curvas de nivel corresponden a las funciones discriminantes en cada región.}
+\label{fig:ejercicio234}
+\end{figure}
+
+
+\clearpage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %\begin{par}
 %Considere el sistema $H(z)=\frac{1-2z^{-1}+2z^{-2}-z^{-3}}{(1-z^{-1})(1-0.5z^{-2})(1-0.2z^{-3})}$
