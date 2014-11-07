@@ -1,5 +1,6 @@
 function [w, y] = perceptron( X, yd, alfa, tolerancia, iterMax)
-%UNTITLED6 Summary of this function goes here
+% [w, y] = perceptron( X, yd, alfa, tolerancia, iterMax) entrena un 
+% perceptron a partir de los patrones X y sus clases conocidas yd.
 %   X son las caracteristicas, cada ejemplo en un renglon
 %   yd es la salida deseada, la clase de cada ejemplo
 %   alfa el coeficiente de aprendizaje
@@ -16,11 +17,11 @@ if nargin < 5
     iterMax = 100; % tolerancia en el error de entrenamiento
 end
 
-N = size(X,1);
-nCarac = size(X,2);
+N = size(X,1);          % cantidad de patrones de entrenamiento
+nCarac = size(X,2);     % cantidad de caracteristicas
 
-Xbias = [ones(N,1), X];
-y = zeros(size(yd));
+Xbias = [ones(N,1), X]; % agrego unos para entrenar bias
+y = zeros(size(yd));    % clasificacion de los patrones de entrenamiento
 
 w = 0.5*rand(1,nCarac+1); % inicializo los pesos, incluido el del bias
 error = 1;
@@ -29,13 +30,13 @@ iter = 0;
 while (error > tolerancia) && (iter < iterMax)
     iter = iter + 1;
     for n = 1:N
-        y(n) = sign( dot( w, Xbias(n,:) ) );% salida del perceptron para el patron X(j)
-        w = w + alfa * (yd(n) - y(n)) * Xbias(n,:); % ajuste de w, si d ~= y
+        % salida del perceptron para el patron X(j)
+        y(n) = sign( dot( w, Xbias(n,:) ) );
+        w = w + alfa * (yd(n) - y(n)) * Xbias(n,:); % ajuste de w
     end
     error = norm(yd-y) / N;
 end
 
 % Actualizo la clasificacion para los patrones de entrenamiento
 y = sign(Xbias * w');
-
 end

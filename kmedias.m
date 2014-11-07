@@ -15,11 +15,11 @@ if nargin < 4
     iterMax = 100; % tolerancia en el error de entrenamiento
 end
 
-N = size(X,1);         % cantidad de patrones
-nCarac = size(X,2);
-med = zeros(k,nCarac);
-y = zeros(N,1);
-grupo = cell(k,1);
+N = size(X,1);          % cantidad de patrones
+nCarac = size(X,2);     % cantidad de caracteristicas
+med = zeros(k,nCarac);  % donde guardo las medias de los k grupos
+y = zeros(N,1);         % grupo asignado a cada patron
+grupo = cell(k,1);      % lista los patrones de cada grupo
 
 % inicialización, asigno grupos al azar y en igual cantidad
 indices = randperm(N); % orden arbitrario de los indices
@@ -59,7 +59,7 @@ while (iter < iterMax) && cambio > tolerancia
         med(g,:) = mean(X(grupo{g},:),1); % nuevas medias
         y(grupo{g})=g; % asignaciones de cada patron a cada grupo
     end
-    cambio = norm(med - medAnteriores);
+    cambio = norm(med - medAnteriores); % cambio de posición de las medias
 end
 
 end
