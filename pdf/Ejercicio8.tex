@@ -1,0 +1,668 @@
+
+% This LaTeX was auto-generated from an M-file by MATLAB.
+% To make changes, update the M-file and republish this document.
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{color}
+
+\sloppy
+\definecolor{lightgray}{gray}{0.5}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+    
+    
+\subsection*{Contents}
+
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item Ejercicio 8 - Árboles de decisión
+   \item Ejercicio 8.1
+   \item crecerArbol.m
+   \item impureza.m
+   \item Ejercicio 8.2
+\end{itemize}
+
+
+\subsection*{Ejercicio 8 - Árboles de decisión}
+
+\begin{verbatim}
+clc; clear all; close all;
+\end{verbatim}
+
+
+\subsection*{Ejercicio 8.1}
+
+\begin{par}
+Se tienen datos acerca de la realización o suspensión de partidos de tenis en función del pronóstico del tiempo y los datos del día que se han volcado en el Cuadro 1:
+\end{par} \vspace{1em}
+\begin{verbatim}
+% atributos de cada ejemplo: pronostico, temperatura, humedad, viento
+% el ulitmo elemento de cada ejemplo es la clase
+datosCuadro1 = {'soleado',  'calor',    'alta',     'no', 'N';
+                'soleado',  'calor',    'alta',     'si', 'N';
+                'nublado',  'calor',    'alta',     'no', 'P';
+                'lluvioso', 'moderado', 'alta',     'no', 'P';
+                'lluvioso', 'frio',     'normal',   'no', 'P';
+                'lluvioso', 'frio',     'normal',   'si', 'N';
+                'nublado',  'frio',     'normal',   'si', 'P';
+                'soleado',  'moderado', 'alta',     'no', 'N';
+                'soleado',  'frio',     'normal',   'no', 'P';
+                'lluvioso', 'moderado', 'normal',   'no', 'P';
+                'soleado',  'moderado', 'normal',   'si', 'P';
+                'nublado',  'moderado', 'alta',     'si', 'P';
+                'nublado',  'calor',    'normal',   'no', 'P';
+                'lluvioso', 'moderado', 'alta',     'si', 'N';};
+\end{verbatim}
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item a) Construya "a mano" (haciendo todas las cuentas) y dibuje el árbol binario de decisión que describa los datos sobre juegos de tenis del cuadro. Utilice como impureza la entropía.
+\end{itemize}
+\begin{par}
+El árbol construido a mano se esquematiza en la página siguiente. Los calculos realizados a mano se incluyen a continuación del esquema del árbol.
+\end{par} \vspace{1em}
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item b) Escriba un programa que permita crecer áboles de decisión binarios y utilícelo para generar automáticamente un árbol a partir de los datos anteriores. Contraste con el árbol generado por Ud.
+\end{itemize}
+
+
+\subsection*{crecerArbol.m}
+
+\begin{verbatim}
+dbtype crecerArbol.m
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}
+1     function arbol = crecerArbol(datos, ejemplos, listaCaracteristicas,...
+2                                  tipoImpureza, debugging)
+3     % arbol = crecerArbol(datos,ejemplos,listaCaracteristicas,tipoImpureza,debugging)
+4     % construye el arbol a partir de los datos dados
+5     %   datos es una celda donde cada ejemplo esta por renglon y por columnas
+6     %   las características. La ultima columna corresponde a la clase. Las
+7     %   caracteristicas pueden ser cadenas de caracteres o numéricas.
+8     %   
+9     %   ejemplos es una lista de los ejemplos a utilizar, por defecto se
+10    %   utilizan todos si ejemplos es una matriz vacía.
+11    %   
+12    %   listaCaracterísticas es una celda con los nombres de cada tipo de
+13    %   característica
+14    %
+15    %   tipoImpureza es un string que configura la impureza a utilizar, puede
+16    %   ser:
+17    %   - 'ent': calcula la impureza por la entropia (por defecto)
+18    %   - 'gini': calcula la impureza de Gini
+19    %   - 'miss': impureza por la minima probabilidad de errar la clasificación
+20    %
+21    %   debugging imprime informacion por pantalla:
+22    %   - 0: no imprime nada
+23    %   - 1: imprime la información de cada nodo del arbol generado
+24    %   - 2: igual que 1 más información intermedia utilizada en el crecimiento
+25    %        del árbol
+26    %
+27    %   arbol es una celda donde cada elemento es un nodo. Cada nodo tiene
+28    %   distinto tipo de información de acuerdo a su tipo (por ejemplo, id,
+29    %   pregunta, hijos, clase)
+30    %   clase 
+31    if (nargin < 2) || isempty(ejemplos)
+32        n1.ejemplos = 1:size(datos,1); % inicializo con todos los ejemplos
+33    else
+34        n1.ejemplos = ejemplos; % inicializo con los ejemplos dados
+35    end
+36    if (nargin < 3) || isempty(listaCaracteristicas)
+37        auxc = 1:(size(datos,2)-1); % todas las caracteristicas
+38        listaCaracteristicas = sprintf('Atributo%i ',auxc);
+39        listaCaracteristicas = strsplit(listaCaracteristicas(1:end-1));
+40    end
+41    if (nargin < 4) || isempty(tipoImpureza)
+42        tipoImpureza = 'ent'; % calcula impureza por entropia
+43    end
+44    if nargin < 5
+45        debugging = false; % Por defecto no imprime por pantalla
+46    end
+47    
+48    
+49    n1.id = 1;                     % id del nodo raiz
+50    nodosARevisar = n1.id;         % el primer nodo a revisar es el nodo raiz
+51    n1.tipo = 'aRevisar';          % tipo provisorio
+52    arbol{1} = n1;                 % arbol inicial con nodo raiz
+53    
+54    % mientras queden nodos por revisar
+55    while ~isempty(nodosARevisar)
+56        % Reviso el siguiente nodo de la lista
+57        nodo.id = nodosARevisar(1);
+58        % enumero los ejemplos que le corresponden 
+59        ejemplos = arbol{nodosARevisar(1)}.ejemplos;
+60        
+61        % Genera una lista con las clases encontradas en los ejemplos
+62        clasesPorEjemplo = datos(ejemplos,end); %lista la clase de cada ejemplo
+63        clases = unique(clasesPorEjemplo);      %lista con las posibles clases
+64    
+65        %% Si todos los ejemplos pertenecen a la misma clase creo un nodo hoja
+66        if length(clases) == 1
+67            nodo.tipo = 'hoja';             % tipo de nodo
+68            nodo.clase = clases{1};         % clase del nodo hoja
+69    
+70        %% Si no son todos los ejemplos de la misma clase se debe elegir que 
+71        %  caracteristica utilizar
+72        else
+73            % Cantidad de ejemplos e impureza del nodo padre
+74            nPadre = length(ejemplos);                 
+75            iPadre = impureza(clasesPorEjemplo, tipoImpureza); 
+76            deltaimax = 0; %variable auxiliar para buscar la mejor ramificaci�n
+77            nodo.tipo = 'sinAsignar'; % etiqueta de control interno
+78            
+79            % Para cada caracteristica candidata
+80            for lc = 1:length(listaCaracteristicas)
+81                % si las caracteristicas son num�ricas
+82                auxcarac = horzcat(datos{ejemplos,lc});
+83                esNumerica = isnumeric(auxcarac);
+84                
+85                % exploro las alternativas de cada caracteristica
+86                if esNumerica
+87                    % si es num�rica genero los candidatos ordenando por valor
+88                    % y tomando el valor medio en cada salto de clase
+89                    [valor, orden] = sort(horzcat(datos{ejemplos,lc}));
+90                    clasesOrdenadas = clasesPorEjemplo(orden);
+91                    decisionesCandidatas = [];
+92                    for co = 2:length(clasesOrdenadas)
+93                        if ~strcmp(clasesOrdenadas(co-1),clasesOrdenadas(co))
+94                            vmedio = 0.5 * (valor(co-1) + valor(co));
+95                            decisionesCandidatas=[decisionesCandidatas vmedio];
+96                        end
+97                    end
+98                else
+99                    % si es categ�rica cada valor se vuelve candidato
+100                   decisionesCandidatas = unique(datos(ejemplos,lc));
+101               end
+102               iterFinal = length(decisionesCandidatas); % itero sobre todas 
+103                                                         % las opciones
+104               
+105               % si hay dos valores posibles no necesita iterar m�s de una vez
+106               if (iterFinal == 2) && esNumerica
+107                   iterFinal = 1;
+108               end
+109               
+110               % Para cada valor posible de la caracteristica candidata se calcula
+111               % el deltai, a la vez que se compara con el maximo almacenado.
+112               for dc = 1:iterFinal
+113                   if esNumerica
+114                       auxHijoSi = (decisionesCandidatas(dc) > auxcarac);
+115                   else
+116                       auxHijoSi = strcmp(decisionesCandidatas(dc), datos(ejemplos,lc));
+117                   end
+118                   auxHijoNo = ~auxHijoSi;
+119                   nHijoSi = sum(auxHijoSi);
+120                   nHijoNo = sum(auxHijoNo);
+121                   iHijoSi = impureza(clasesPorEjemplo(auxHijoSi), tipoImpureza);
+122                   iHijoNo = impureza(clasesPorEjemplo(auxHijoNo), tipoImpureza);
+123                   
+124                   deltai = iPadre - (nHijoSi/nPadre) * iHijoSi - ...
+125                       (nHijoNo/nPadre) * iHijoNo;
+126                      
+127                   % Si deltai es mayor al maximo pasa a ser la decision elegida
+128                   if deltai > deltaimax
+129                       deltaimax = deltai;
+130                       
+131                       % El nodo actual se divide en dos.
+132                       nodo.tipo = 'divisor';
+133                       % Se guarda la pregunta utilizada para dividir
+134                       if esNumerica
+135                           nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
+136                                            sprintf(' < %0.1f?', decisionesCandidatas(dc))];
+137                       else
+138                           nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
+139                                            '=' decisionesCandidatas{dc} '?'];
+140                       end
+141                       % Se asignan los id de los nodos que responden si y no
+142                       nodo.HijoSi = length(arbol) + 1;
+143                       nodo.HijoNo = length(arbol) + 2;
+144                       % Tipo provisorio
+145                       nodoHijoSi.tipo = 'aRevisar';
+146                       nodoHijoNo.tipo = 'aRevisar';
+147                       % Los ejemplos del padre se dividen entre los nodos hijos
+148                       nodoHijoSi.ejemplos = ejemplos(auxHijoSi);
+149                       nodoHijoNo.ejemplos = ejemplos(auxHijoNo);
+150                   end
+151                   
+152                   if debugging > 1
+153                       if esNumerica
+154                           preg = ['¿' listaCaracteristicas{lc} ...
+155                                            sprintf(' < %0.1f?', decisionesCandidatas(dc))];
+156                       else
+157                           preg = ['¿' listaCaracteristicas{lc} ...
+158                                            '=' decisionesCandidatas{dc} '?'];
+159                       end
+160                       fprintf('pregunta: %s', preg)
+161                       fprintf('deltai: %0.5f\n', deltai)
+162                   end
+163               end
+164           end
+165       end
+166       
+167       % Si no se pudo ramificar y el nodo contiene m�s de una clase
+168       if strcmp(nodo.tipo,'sinAsignar')
+169           cuentaXclase = histClases(clasesPorEjemplo); % simil histograma
+170           [~, imax] = max(cuentaXclase);  % indice de la clase mayoritaria
+171           nodo.clase = clases{imax};      % clase mayoritaria
+172           nodo.tipo = 'hoja';             % tipo de nodo
+173       end
+174       
+175       % Si est� activo el debugging imprimo en pantalla
+176       if debugging > 1
+177           fprintf('\nEn nodo %i reviso los ejemplos:\n',nodo.id);
+178           fprintf('%i, ',ejemplos);
+179           
+180           if strcmp(nodo.tipo,'hoja')
+181               fprintf('\nNodo hoja, clase: %s\n', nodo.clase);
+182               if length(clases) > 1
+183                   fprintf('------¡Impuro!----------\n')
+184                   fprintf('%s\t', clases{:});
+185                   fprintf('\n');
+186                   fprintf('%i\t', cuentaXclase);
+187                   fprintf('\n');
+188               end
+189           elseif strcmp(nodo.tipo,'divisor')
+190               fprintf('\nNodo divisor: %s\n', nodo.pregunta);
+191           else
+192               disp('---- ¡Ups! el árbol tiene una rama seca ----');
+193           end
+194       end
+195       
+196       % Definido el nodo lo agrego al arbol
+197       arbol{nodosARevisar(1)} = nodo;
+198       
+199       % Si es un nodo divisor agrego los hijos a la lista para revisar
+200       if strcmp(nodo.tipo, 'divisor')
+201           arbol{nodo.HijoSi} = nodoHijoSi;
+202           arbol{nodo.HijoNo} = nodoHijoNo;
+203           nodosARevisar = [nodosARevisar nodo.HijoSi nodo.HijoNo];
+204       end
+205       nodosARevisar = setdiff(nodosARevisar, nodosARevisar(1));
+206       
+207       % Limpieza antes del siguiente ciclo
+208       clear nodo nodoHijoSi nodoHijoNo; 
+209   end
+210   
+211   % Si está activo el debugging imprime el árbol creado
+212   if debugging
+213       disp('-------------------------')
+214       disp('Detalles del árbol creado')
+215       disp('-------------------------')
+216       for aa = 1:length(arbol)
+217           disp(arbol{aa})
+218       end
+219   end
+220   
+221   end
+\end{verbatim} \color{black}
+    
+
+\subsection*{impureza.m}
+
+\begin{verbatim}
+dbtype impureza.m
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}
+1     function imp = impureza( clasesEnEjemplos, metodo)
+2     % Calcula la impureza del nodo dada la lista de clases por ejemplos. 
+3     %   imp = impureza( clasesEnEjemplos, metodo)
+4     %   clasesEnEjemplos: lista con la clase de cada ejemplo
+5     %   imp: impureza calculada
+6     %   metodo: utilizado para calcular la impureza, definido por un string:
+7     %   - 'ent': calcula la impureza por la entropia.
+8     %   - 'gini': calcula la impureza de Gini
+9     %   - 'miss': impureza por la minima probabilidad de errar la clasificación
+10    
+11    cuentas = histClases(clasesEnEjemplos); % cantidad de ejemplos por clase
+12    total = sum(cuentas);                   % cantidad de ejemplos en el nodo
+13    imp = 0;                                % inicializo la impureza
+14    
+15    % Si no son todos de la misma clase
+16    if all(cuentas ~= total)
+17        if strcmp(metodo, 'ent')
+18            imp = - sum( (cuentas./total) .* log(cuentas./total) );
+19        elseif strcmp(metodo, 'gini')
+20            imp = 1 - sum((cuentas./total).^2);
+21        elseif strcmp(metodo, 'miss')
+22            imp = 1 - max(cuentas./total);
+23        else
+24            disp('------ Perdón, no sé calcular esa impureza :( ------');
+25        end
+26    end
+27    
+28    end
+29    
+
+\end{verbatim} \color{black}
+    \begin{verbatim}
+% listaEjemplos = 1:14; uso todos, no hace falta
+nombresCaract = {'pronostico', 'temperatura', 'humedad', 'viento'};
+debug = 1; % solo publica el arbol construido
+tipoImpureza = 'ent';
+arbol1b = crecerArbol(datosCuadro1, [],nombresCaract,tipoImpureza,debug);
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}-------------------------
+Detalles del árbol creado
+-------------------------
+          id: 1
+        tipo: 'divisor'
+    pregunta: '¿pronostico=nublado?'
+      HijoSi: 2
+      HijoNo: 3
+
+       id: 2
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 3
+        tipo: 'divisor'
+    pregunta: '¿humedad=alta?'
+      HijoSi: 4
+      HijoNo: 5
+
+          id: 4
+        tipo: 'divisor'
+    pregunta: '¿pronostico=lluvioso?'
+      HijoSi: 6
+      HijoNo: 7
+
+          id: 5
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 8
+      HijoNo: 9
+
+          id: 6
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 10
+      HijoNo: 11
+
+       id: 7
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 8
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 9
+        tipo: 'divisor'
+    pregunta: '¿pronostico=lluvioso?'
+      HijoSi: 12
+      HijoNo: 13
+
+       id: 10
+     tipo: 'hoja'
+    clase: 'P'
+
+       id: 11
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 12
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 13
+     tipo: 'hoja'
+    clase: 'P'
+
+\end{verbatim} \color{black}
+    \begin{par}
+Este arbol da igual que el que hice a mano, sólo cambia la forma de expresar las preguntas. Por ejemplo, en nodo 4 (D) en vez de preguntar por ¿soleado? pregunta por ¿lluvioso? que es equivalente porque hay dos posibilidades en ese momento (ya se había preguntado por nublado). En nodo 9 (I) donde podría haber elegido temperatura también elige pronóstico
+\end{par} \vspace{1em}
+\begin{par}
+En la página siguiente esquematizo el árbol encontrado
+\end{par} \vspace{1em}
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item c) Modifique el tipo de impureza empleada y comente las diferencias con el árbol generado en el punto anterior.
+\end{itemize}
+\begin{verbatim}
+tipoImpureza = 'gini';
+arbol1cgini = crecerArbol(datosCuadro1, [],nombresCaract,tipoImpureza,debug);
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}-------------------------
+Detalles del árbol creado
+-------------------------
+          id: 1
+        tipo: 'divisor'
+    pregunta: '¿pronostico=nublado?'
+      HijoSi: 2
+      HijoNo: 3
+
+       id: 2
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 3
+        tipo: 'divisor'
+    pregunta: '¿humedad=alta?'
+      HijoSi: 4
+      HijoNo: 5
+
+          id: 4
+        tipo: 'divisor'
+    pregunta: '¿pronostico=lluvioso?'
+      HijoSi: 6
+      HijoNo: 7
+
+          id: 5
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 8
+      HijoNo: 9
+
+          id: 6
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 10
+      HijoNo: 11
+
+       id: 7
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 8
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 9
+        tipo: 'divisor'
+    pregunta: '¿pronostico=lluvioso?'
+      HijoSi: 12
+      HijoNo: 13
+
+       id: 10
+     tipo: 'hoja'
+    clase: 'P'
+
+       id: 11
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 12
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 13
+     tipo: 'hoja'
+    clase: 'P'
+
+\end{verbatim} \color{black}
+    \begin{par}
+El árbol calculado con la impureza de gini es igual que el hecho a mano y que el del punto 1.b
+\end{par} \vspace{1em}
+\begin{verbatim}
+tipoImpureza = 'miss';
+arbol1cmiss = crecerArbol(datosCuadro1, [],nombresCaract,tipoImpureza,debug);
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}-------------------------
+Detalles del árbol creado
+-------------------------
+          id: 1
+        tipo: 'divisor'
+    pregunta: '¿pronostico=soleado?'
+      HijoSi: 2
+      HijoNo: 3
+
+          id: 2
+        tipo: 'divisor'
+    pregunta: '¿humedad=alta?'
+      HijoSi: 4
+      HijoNo: 5
+
+          id: 3
+        tipo: 'divisor'
+    pregunta: '¿temperatura=frio?'
+      HijoSi: 6
+      HijoNo: 7
+
+       id: 4
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 5
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 6
+        tipo: 'divisor'
+    pregunta: '¿pronostico=lluvioso?'
+      HijoSi: 8
+      HijoNo: 9
+
+       id: 7
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 8
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 10
+      HijoNo: 11
+
+       id: 9
+     tipo: 'hoja'
+    clase: 'P'
+
+       id: 10
+     tipo: 'hoja'
+    clase: 'P'
+
+       id: 11
+     tipo: 'hoja'
+    clase: 'N'
+
+\end{verbatim} \color{black}
+    \begin{par}
+El árbol calculado con la impureza de clasificar mal difiere de los anteriores desde la primera pregunta. Tiene dos nodos menos y tiene una hoja impura (nodo 7), al contrario de los anteriores los grupos que se formaron al clasificar los ejemplos son distintos en su mayoria
+\end{par} \vspace{1em}
+\begin{par}
+En la página siguiente esquematizo el árbol encontrado
+\end{par} \vspace{1em}
+
+
+\subsection*{Ejercicio 8.2}
+
+\begin{par}
+Se han modificado los datos de juegos de tenis anteriores para incluir valores numéricos de temperatura y humedad de acuerdo con el Cuadro 2: Modifique el programa desarrollado para tratar con atributos numéricos y genere un nuevo árbol con los datos del cuadro.
+\end{par} \vspace{1em}
+\begin{verbatim}
+datosCuadro2 = {'soleado',  85,    85,   'no', 'N';
+                'soleado',  80,    90,   'si', 'N';
+                'nublado',  83,    78,   'no', 'P';
+                'lluvioso', 70,    96,   'no', 'P';
+                'lluvioso', 68,    80,   'no', 'P';
+                'lluvioso', 65,    70,   'si', 'N';
+                'nublado',  64,    65,   'si', 'P';
+                'soleado',  72,    95,   'no', 'N';
+                'soleado',  69,    70,   'no', 'P';
+                'lluvioso', 75,    80,   'no', 'P';
+                'soleado',  75,    70,   'si', 'P';
+                'nublado',  72,    90,   'si', 'P';
+                'nublado',  81,    75,   'no', 'P';
+                'lluvioso', 71,    80,   'si', 'N';};
+
+
+tipoImpureza = 'ent';
+arbol2 = crecerArbol(datosCuadro2, [],nombresCaract,tipoImpureza,debug);
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}-------------------------
+Detalles del árbol creado
+-------------------------
+          id: 1
+        tipo: 'divisor'
+    pregunta: '¿pronostico=nublado?'
+      HijoSi: 2
+      HijoNo: 3
+
+       id: 2
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 3
+        tipo: 'divisor'
+    pregunta: '¿temperatura < 77.5?'
+      HijoSi: 4
+      HijoNo: 5
+
+          id: 4
+        tipo: 'divisor'
+    pregunta: '¿temperatura < 73.5?'
+      HijoSi: 6
+      HijoNo: 7
+
+       id: 5
+     tipo: 'hoja'
+    clase: 'N'
+
+          id: 6
+        tipo: 'divisor'
+    pregunta: '¿viento=no?'
+      HijoSi: 8
+      HijoNo: 9
+
+       id: 7
+     tipo: 'hoja'
+    clase: 'P'
+
+          id: 8
+        tipo: 'divisor'
+    pregunta: '¿temperatura < 71.0?'
+      HijoSi: 10
+      HijoNo: 11
+
+       id: 9
+     tipo: 'hoja'
+    clase: 'N'
+
+       id: 10
+     tipo: 'hoja'
+    clase: 'P'
+
+       id: 11
+     tipo: 'hoja'
+    clase: 'N'
+
+\end{verbatim} \color{black}
+    \begin{par}
+La función presentada anteriormente ya contiene los cambios realizados para tratar con atributos numéricos. No repito aquí el código por esa causa.
+\end{par} \vspace{1em}
+\begin{par}
+En este caso no usa el pronóstico más allá del nodo raíz. La humedad no la usa nunca. La temperatura la usa 3 veces, aprovechando que tiene más cortes candidatos. El viento una sola vez. El árbol es más profundo en este caso puede ser que se esmere por ir separanado en hojas y termine utilizando más decisiones de las necesarias, típico de busqueda en profundidad. Es más desbalanceado que en los casos anteriores, quizá por tener más flexibilidad de elección prefiere ir dejando nodos hojas puros en el camino.
+\end{par} \vspace{1em}
+
+
+
+\end{document}
+    

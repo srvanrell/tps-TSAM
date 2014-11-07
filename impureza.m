@@ -6,7 +6,7 @@ function imp = impureza( clasesEnEjemplos, metodo)
 %   metodo: utilizado para calcular la impureza, definido por un string:
 %   - 'ent': calcula la impureza por la entropia.
 %   - 'gini': calcula la impureza de Gini
-%   - 'miss': impureza por la minima probabilidad de errar la clasificación
+%   - 'miss': impureza por la minima probabilidad de errar la clasificaciÃ³n
 
 cuentas = histClases(clasesEnEjemplos); % cantidad de ejemplos por clase
 total = sum(cuentas);                   % cantidad de ejemplos en el nodo
@@ -21,7 +21,7 @@ if all(cuentas ~= total)
     elseif strcmp(metodo, 'miss')
         imp = 1 - max(cuentas./total);
     else
-        disp('------ Perdón, no sé calcular esa impureza :( ------');
+        disp('------ PerdÃ³n, no sÃ© calcular esa impureza :( ------');
     end
 end
 

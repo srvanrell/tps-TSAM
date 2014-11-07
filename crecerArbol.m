@@ -1,8 +1,33 @@
 function arbol = crecerArbol(datos, ejemplos, listaCaracteristicas,...
                              tipoImpureza, debugging)
+% arbol = crecerArbol(datos,ejemplos,listaCaracteristicas,tipoImpureza,debugging)
+% construye el arbol a partir de los datos dados
+%   datos es una celda donde cada ejemplo esta por renglon y por columnas
+%   las características. La ultima columna corresponde a la clase. Las
+%   caracteristicas pueden ser cadenas de caracteres o numéricas.
+%   
+%   ejemplos es una lista de los ejemplos a utilizar, por defecto se
+%   utilizan todos si ejemplos es una matriz vacía.
+%   
+%   listaCaracterísticas es una celda con los nombres de cada tipo de
+%   característica
 %
+%   tipoImpureza es un string que configura la impureza a utilizar, puede
+%   ser:
+%   - 'ent': calcula la impureza por la entropia (por defecto)
+%   - 'gini': calcula la impureza de Gini
+%   - 'miss': impureza por la minima probabilidad de errar la clasificación
 %
-
+%   debugging imprime informacion por pantalla:
+%   - 0: no imprime nada
+%   - 1: imprime la información de cada nodo del arbol generado
+%   - 2: igual que 1 más información intermedia utilizada en el crecimiento
+%        del árbol
+%
+%   arbol es una celda donde cada elemento es un nodo. Cada nodo tiene
+%   distinto tipo de información de acuerdo a su tipo (por ejemplo, id,
+%   pregunta, hijos, clase)
+%   clase 
 if (nargin < 2) || isempty(ejemplos)
     n1.ejemplos = 1:size(datos,1); % inicializo con todos los ejemplos
 else
@@ -107,10 +132,10 @@ while ~isempty(nodosARevisar)
                     nodo.tipo = 'divisor';
                     % Se guarda la pregunta utilizada para dividir
                     if esNumerica
-                        nodo.pregunta = ['�' listaCaracteristicas{lc} ...
+                        nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
                                          sprintf(' < %0.1f?', decisionesCandidatas(dc))];
                     else
-                        nodo.pregunta = ['�' listaCaracteristicas{lc} ...
+                        nodo.pregunta = ['¿' listaCaracteristicas{lc} ...
                                          '=' decisionesCandidatas{dc} '?'];
                     end
                     % Se asignan los id de los nodos que responden si y no
@@ -155,7 +180,7 @@ while ~isempty(nodosARevisar)
         if strcmp(nodo.tipo,'hoja')
             fprintf('\nNodo hoja, clase: %s\n', nodo.clase);
             if length(clases) > 1
-                fprintf('------�Impuro!----------\n')
+                fprintf('------¡Impuro!----------\n')
                 fprintf('%s\t', clases{:});
                 fprintf('\n');
                 fprintf('%i\t', cuentaXclase);
@@ -164,7 +189,7 @@ while ~isempty(nodosARevisar)
         elseif strcmp(nodo.tipo,'divisor')
             fprintf('\nNodo divisor: %s\n', nodo.pregunta);
         else
-            disp('---- �Ups! el �rbol tiene una rama seca ----');
+            disp('---- ¡Ups! el árbol tiene una rama seca ----');
         end
     end
     
@@ -183,10 +208,10 @@ while ~isempty(nodosARevisar)
     clear nodo nodoHijoSi nodoHijoNo; 
 end
 
-% Si est� activo el debugging imprime el �rbol creado
+% Si está activo el debugging imprime el árbol creado
 if debugging
     disp('-------------------------')
-    disp('Detalles del �rbol creado')
+    disp('Detalles del árbol creado')
     disp('-------------------------')
     for aa = 1:length(arbol)
         disp(arbol{aa})
