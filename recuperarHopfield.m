@@ -4,8 +4,8 @@ function y = recuperarHopfield( y0, W, iterMax, graficar)
 %      Debe ser un vector fila. 
 %   W es la matriz de pesos de la red de Hopfield.
 %   iterMax son las iteraciones máximas permitidas, por defecto son 100.
-%   graficar es un valor lógico que grafica cada estado intermedio. 
-%      Por defecto es falso.
+%   graficar es un valor lógico que grafica cada estado intermedio. Por 
+%      defecto es falso.
 if nargin < 3
     iterMax = 100; % iteraciones máximas
 end
