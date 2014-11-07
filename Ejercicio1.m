@@ -1,13 +1,13 @@
-%% Ejercicio 1
-%% Introducci贸n y repaso de probabilidad y teor铆a de informaci贸n.
+%% Ejercicio 1 - Introducci贸n y repaso de probabilidad y teor铆a de informaci贸n
+% 
 % Escriba un programa para generar n煤meros aleatorios $\mathbf{x}$ con una
 % funci贸n de densidad de probabilidad ($fdp$) gaussiana 
-% $\mathcal{N}(\mathbf{\mu},\mathbf{\Sigma})) en $d$ dimensiones:
+% $\mathcal{N}(\mathbf{\mu},\mathbf{\Sigma})) en $d$ dimensiones.
 %
 
 clc; close all; clear all;
 
-%% 1. 
+%% Ejercicio 1.1
 % Para cada uno de los siguientes casos: i) $fdp$ gaussiana 
 % unidimensional, ii) $fdp$ gaussiana bidimensional no correlacionada y 
 % iii) $fdp$ gaussiana bidimensional correlacionada,
@@ -36,7 +36,7 @@ t = -7:0.01:13;
 fdpteor = normpdf(t,media,desvio); % fdp te贸rica con igual media y desvio
 hold on; plot(t,fdpteor,'-k','LineWidth',2); hold off;
 
-title({'fdp de una distribuci贸n gaussiana unidimensional';
+title({'fdp de una distribucion gaussiana unidimensional';
        sprintf('mu = %0.1f, sigma = %0.1f', media, desvio)})
 ylabel('p(x)'); xlabel('x');
 legend('fdp experimental','fdp teorica')
@@ -63,13 +63,13 @@ dbtype randgauss1D.m
 meds{1} = [50 100]; % 
 covs{1} = [2 0;     % definici贸n de fdp no correlacionada
            0 1];    %
-titulos{1} = ['fdp de una distribuci贸n gaussiana bidimensional no ' ... 
+titulos{1} = ['fdp de una distribucion gaussiana bidimensional no ' ... 
               'correlacionada'];
         
 meds{2} = [50 100]; % 
 covs{2} = [2 1;     % definici贸n de fdp correlacionada
            1 1];    %
-titulos{2} = ['fdp de una distribuci贸n gaussiana bidimensional ' ...
+titulos{2} = ['fdp de una distribucion gaussiana bidimensional ' ...
               'correlacionada'];
        
 % Realizo la misma comparacion para los casos ii) y iii)
@@ -77,7 +77,7 @@ for k = 1:2
 media = meds{k};
 covar = covs{k};
 titulo = titulos{k};
-figure
+figure('units','normalized','outerposition',[0 0 1 1]);
 suptitle({titulo; sprintf(['mu = [%0.0f %0.0f], '...
                            'sigma = [%0.0f %0.0f; %0.0f %0.0f]'],...
                           media, covar)})
@@ -106,7 +106,7 @@ for i = 1:NN
         fdpteor(i,j) = mvnpdf([t1(i) t2(j)],media,covar);
     end
 end
-hold on; contour3(t1,t2,0.005+fdpteor','r-'); hold off
+hold on; contour3(t1,t2,0.005+fdpteor','k-'); hold off
 axis tight;
 daspect([max(daspect)*[1 1] 2]);% relacion de aspecto en x1 y x2
 
@@ -117,9 +117,9 @@ title('Superficie de nivel')
 % curvas de nivel de la teorica y la experimental
 subplot(1,2,2); 
 % contour necesita la matriz traspuesta
-contour(centros{1},centros{2},fdpexp',7,'k');         % fdp experimental
-hold on; contour(t1,t2,0.01+fdpteor',7,'r'); hold off % fdp teorica
-axis equal; axis([44 56 96 104]);
+contour(centros{1},centros{2},fdpexp',5,'k');          % fdp experimental
+hold on; contour(t1,t2,0.01+fdpteor',5,'b:'); hold off % fdp teorica
+axis equal; axis([46 54 97 103]);
 
 ylabel('x_2'); xlabel('x_1');
 title('Curvas de nivel')
@@ -148,69 +148,63 @@ dbtype mvrandgauss.m
 dbtype randgaussXD.m
 
 
-%% 2. 
+%% Ejercicio 1.2 
 % Compruebe num茅ricamente el teorema del l铆mite central mediante la suma
 % de n煤meros aleatorios con distribuci贸n uniforme.
 
-repeticiones = 10000;
-N = 1:10;%[1 2 4 40];
-
-% evolucion = zeros(length(N),4);
-promedio = zeros(1,repeticiones) ;
+repeticiones = 10000; % veces a repetir el calculo del promedio
+N = [1 2 4 40];       % numeros a promedior
+promedio = zeros(1,repeticiones);
+figure
 for n = 1:length(N)
     for r = 1:repeticiones
         % suma de N n煤meros aleatorios en [-1, +1]
-        promedio(r) = (1/N(n)) * sum(rand(1,N(n)));
+        promedio(r) = (1/N(n)) * sum(2*rand(1,N(n))-1);
     end
-    
-    qqplot(promedio)
-    pause
-%     subplot(2,2,i)
-%      figure
-%      hist(promedio,40)
-%      title(['N=' num2str(N(n))])
-    % Guardo valores estimados y los teoricos
-    % meadia de distribucion uniforme 
-%     puntaje = kstest( (promedio-0.5) /  sqrt(1/(12*N(n))) );
-%     puntaje2 = jbtest(promedio, 0.01);
-%     evolucion(n,:) = [mean(promedio), std(promedio), puntaje, puntaje2];
+    subplot(2,2,n)
+    hist(promedio,40)
+    title(['Promedio entre ' num2str(N(n)) ' numeros'])
 end
- 
-% plot(N,evolucion);
 
 
+%% Ejercicio 1.3
+% Estime num茅ricamente y compare con el valor teorico, la entropia de una
+% variable aleatoria con distribucion: i) laplaciana; ii) gaussiana y iii)
+% uniforme.
 
-%% 3. 
-% Estime num茅ricamente ...
+N=1000;
 
-N=100;
+% mantengo media y desvio para las 3 distribuciones
+media = 3;
+desvio = 2;
 
-media = 0;
-desvio = 1;
+% numeros provenientes de una distribuci髇 gaussiana
 xgauss = media + desvio*randn(N,1);
 
-HgaussTeorica  = 0.5 * (1 + log(2*pi*desvio.^2) )
-HgaussEmpirica1 = shanentropy(xgauss)
-HgaussEmpirica2 = histentropy(xgauss)
-HgaussEmpirica3 = entropia(xgauss',[-3, 3, 30])
-
-
-
-ini = -1;
-fin =  3;
+% numeros provenientes de una distribuci髇 uniforme
+ini = media - sqrt(3) * desvio;
+fin = media + sqrt(3) * desvio;
 xunif = ini + (fin - ini) .* rand(N,1);
 
-HunifTeorica  = log(fin - ini)
-HunifEmpirica1 = shanentropy(xunif)
-HunifEmpirica2 = histentropy(xunif)
-HunifEmpirica3 = entropia(xunif',[-1, 3, 30])
-
-
+% numeros provenientes de una distribuci髇 laplaciana
 media = 5;
-beta  = 2;
+beta  = desvio/sqrt(2);
 xlap  = randlap(N,media,beta);
 
+% Calculo de entropias teoricas y emp韗icas
+HgaussTeorica  = 0.5 * (1 + log(2*pi*desvio.^2) )
+HgaussEmpirica = entropia(xgauss)
+
+HunifTeorica  = log(fin - ini)
+HunifEmpirica = entropia(xunif)
+
 HlapTeorica  = 1 + log(2*beta)
-HlapEmpirica1 = shanentropy(xlap)
-HlapEmpirica2 = histentropy(xlap)
-HlapEmpirica3 = entropia(xlap',[-10, 10, 30])
+HlapEmpirica = entropia(xlap)
+
+%%
+% La entropia teorica de cada distribuci髇 esta calculada para la versi髇
+% cont韓ua de la funci髇 de densidad de probabilidad (fdp). En cambio, la
+% entrop韆 empirica es calculada por media de una aproximaci髇 de la fdp.
+% Esto ocasiona las diferencias observadas en los valores anteriores.
+% Adem醩 es sabido que la entrop韆 discreta no es equivalente a la entrop韆
+% te髍ica
