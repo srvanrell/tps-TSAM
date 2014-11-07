@@ -16,7 +16,7 @@ colormap(invgray);                 % blanco y negro
 
 for p = 1:3
     patronReshaped = reshape(patrones5x5(p,:),[5 5]); % patron --> imagen   
-    subplot(3,3,p); imagesc(patronReshaped'); axis equal tight
+    subplot(3,3,p); imagesc(patronReshaped'); axis equal tight off
     title('Patron original')
 end
 %%
