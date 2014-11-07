@@ -96,8 +96,8 @@ for ss = 1:3
         Ainv  = inv(A{aa});
         disp([suptit{ss} ', columnas ' titort{aa}])
         fprintf(['A = [%0.2f %0.2f],\t Ainv = [%0.2f %0.2f],\t W = [%0.2f %0.2f]\n'...
-                 '    [%0.2f %0.2f],\t Ainv = [%0.2f %0.2f],\t     [%0.2f %0.2f]\n\n'],...
-                 A{aa}(1,:), Ainv(2,:), W(1,:), A{aa}(2,:), Ainv(2,:), W(2,:) );
+                 '    [%0.2f %0.2f],\t        [%0.2f %0.2f],\t     [%0.2f %0.2f]\n\n'],...
+                 A{aa}(1,:), Ainv(1,:), W(1,:), A{aa}(2,:), Ainv(2,:), W(2,:) );
     end
     suptitle(suptit{ss})
 end

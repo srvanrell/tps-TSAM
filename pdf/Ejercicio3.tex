@@ -195,36 +195,36 @@ for ss = 1:3
         Ainv  = inv(A{aa});
         disp([suptit{ss} ', columnas ' titort{aa}])
         fprintf(['A = [%0.2f %0.2f],\t Ainv = [%0.2f %0.2f],\t W = [%0.2f %0.2f]\n'...
-                 '    [%0.2f %0.2f],\t Ainv = [%0.2f %0.2f],\t     [%0.2f %0.2f]\n\n'],...
-                 A{aa}(1,:), Ainv(2,:), W(1,:), A{aa}(2,:), Ainv(2,:), W(2,:) );
+                 '    [%0.2f %0.2f],\t        [%0.2f %0.2f],\t     [%0.2f %0.2f]\n\n'],...
+                 A{aa}(1,:), Ainv(1,:), W(1,:), A{aa}(2,:), Ainv(2,:), W(2,:) );
     end
     suptitle(suptit{ss})
 end
 \end{verbatim}
 
         \color{lightgray} \begin{verbatim}Fuentes gaussianas, columnas ortogonales
-A = [-0.20 0.82],	 Ainv = [0.61 -0.61],	 W = [-0.70 -0.71]
-    [-0.20 -0.82],	 Ainv = [0.61 -0.61],	     [0.71 -0.70]
+A = [0.94 -0.74],	 Ainv = [0.53 0.53],	 W = [-0.71 -0.70]
+    [0.94 0.74],	        [-0.67 0.67],	     [0.70 -0.71]
 
 Fuentes gaussianas, columnas no ortogonales
-A = [0.45 -0.19],	 Ainv = [-1.78 0.86],	 W = [-0.13 -0.99]
-    [0.92 0.78],	 Ainv = [-1.78 0.86],	     [0.99 -0.13]
+A = [-0.05 0.54],	 Ainv = [0.15 -1.22],	 W = [-0.98 0.21]
+    [-0.82 0.07],	        [1.86 -0.11],	     [-0.21 -0.98]
 
 Fuentes laplacianas, columnas ortogonales
-A = [-0.20 0.82],	 Ainv = [0.61 -0.61],	 W = [-0.72 -0.69]
-    [-0.20 -0.82],	 Ainv = [0.61 -0.61],	     [0.69 -0.72]
+A = [0.94 -0.74],	 Ainv = [0.53 0.53],	 W = [0.70 -0.72]
+    [0.94 0.74],	        [-0.67 0.67],	     [0.72 0.70]
 
 Fuentes laplacianas, columnas no ortogonales
-A = [0.45 -0.19],	 Ainv = [-1.78 0.86],	 W = [0.38 -0.93]
-    [0.92 0.78],	 Ainv = [-1.78 0.86],	     [0.93 0.38]
+A = [-0.05 0.54],	 Ainv = [0.15 -1.22],	 W = [0.06 -1.00]
+    [-0.82 0.07],	        [1.86 -0.11],	     [1.00 0.06]
 
 Fuente gaussiana y laplaciana, columnas ortogonales
-A = [-0.20 0.82],	 Ainv = [0.61 -0.61],	 W = [-0.70 -0.71]
-    [-0.20 -0.82],	 Ainv = [0.61 -0.61],	     [0.71 -0.70]
+A = [0.94 -0.74],	 Ainv = [0.53 0.53],	 W = [-0.66 -0.75]
+    [0.94 0.74],	        [-0.67 0.67],	     [0.75 -0.66]
 
 Fuente gaussiana y laplaciana, columnas no ortogonales
-A = [0.45 -0.19],	 Ainv = [-1.78 0.86],	 W = [-0.13 -0.99]
-    [0.92 0.78],	 Ainv = [-1.78 0.86],	     [0.99 -0.13]
+A = [-0.05 0.54],	 Ainv = [0.15 -1.22],	 W = [-0.99 0.12]
+    [-0.82 0.07],	        [1.86 -0.11],	     [-0.12 -0.99]
 
 \end{verbatim} \color{black}
     
