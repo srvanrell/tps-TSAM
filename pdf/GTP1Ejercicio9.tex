@@ -1,0 +1,165 @@
+\documentclass[11pt,a4paper,final]{article}
+
+\usepackage[utf8]{inputenc}     % Codificación del archivo fuente en UTF8
+\usepackage[T1]{fontenc}        % Incorpora fuente con acentos
+\usepackage{amsmath}            % Amplía opciones para las ecuaciones
+%\usepackage[margin=2cm]{geometry}
+
+% -- Bibliografia --
+%\usepackage[style=ieee,
+%            backend=bibtex8,
+%            maxcitenames=2,
+%            mincitenames=1]
+%            {biblatex}          % Control sobre las citas y referencias 
+%  \addbibresource{Referencias.bib} % Archivo con las referencias
+%\usepackage{url}                % Para incluir url clickeables
+
+% -- Tuneando los captions --
+\usepackage[margin=10pt,
+            font=small,
+            labelfont=bf,
+            labelsep=endash]
+            {caption}
+
+% -- Tablas --
+%\usepackage{booktabs}       % Decorado de tablas
+%  \heavyrulewidth=1pt       % Lineas gruesas
+%\usepackage{tabu}           % Permite control del ancho relativo entre columnas
+
+% -- Figuras --
+\usepackage{graphicx}		    % Permite incluir imágenes
+  \graphicspath{{Figuras/}}	    % Ruta relativa donde buscar las imágenes
+\usepackage[font=small,
+            labelfont=bf, 
+            subrefformat=parens]
+            {subcaption}
+            
+% -- Incorporar imágenes de Matlab --
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} 
+\pgfplotsset{plot coordinates/math parser=false}
+\usepackage{tikz}
+\usetikzlibrary{plotmarks} % para plotear las graficas que vienen de Matlab
+            
+%\usepackage{color}
+%
+%\sloppy
+\definecolor{lightgray}{gray}{0.8} % para la grafica 2.3
+
+%---------------------------------------------------------------------------------
+% DEPRECATED COMMANDS
+%---------------------------------------------------------------------------------  
+\usepackage[spanish]{babel}     % Configura en modo español a muchas cosas
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[babel,
+            spanish=spanish]
+            {csquotes}          % Comillas francesas en la bibliografia
+%---------------------------------------------------------------------------------
+
+
+
+\author{Sebastián R. Vanrell\\[3em]}
+\title{{\large Curso:}\\\medskip
+       {\Large Tópicos Selectos en Aprendizaje Maquinal}\\[3em]
+       \textsf{Guía de Trabajos Prácticos Nº1}\\
+       \textsf{\large (Ejercicio 9: SVM)}\\\bigskip
+       \textsf{Algoritmos para Reconocimiento de Patrones}\\[3em]}
+\date{Doctorado en Ingeniería\\\bigskip
+      Facultad de Ingeniería y Ciencias Hídricas\\\bigskip
+      Universidad Nacional del Litoral \\[5em]
+      \today}
+
+\usepackage{color}
+\definecolor{lightgray}{gray}{0.5}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\renewcommand{\tablename}{Tabla}
+
+\maketitle
+\newpage
+
+
+\section*{Scripts de Matlab del ejercicio 9}
+
+\subsection*{9.1 cálculo de los alfas del problema linealmente separable}
+
+\begin{small}
+\begin{verbatim}
+% Se define la funcion objetivo
+H = [-1  0 -1;
+      0  0  0;
+     -1  0 -1];
+H = (-1) .* H;      % (-1) para pasar de maximizacion a minimizacion
+
+f = (-1).* [1 1 1]; % (-1) para pasar de maximizacion a minimizacion
+
+% Se definen las restricciones
+A = (-1) .* eye(3);
+b = [0; 0; 0];
+Aeq = [1 -1 -1];
+beq = 0;
+
+% Se obtienen los alfas
+alfa91 = quadprog(H,f,A,b,Aeq,beq)
+
+alfa91 =
+
+    2.0000
+    2.0000
+         0
+
+% x = quadprog(H,f,A,b,Aeq,beq) resuelve el siguiente problema:
+%
+%  min 1/2*x'*H*x + f'*x
+%
+%  sujeto a:   A*x <= b
+%            Aeq*x = beq
+\end{verbatim}
+\end{small}
+    
+\newpage
+
+\subsection*{9.2 Cálculo de los alfas del problema no linealmente separable}
+
+\begin{small}
+\begin{verbatim}
+% Se define la funcion objetivo
+H = [-4  1  0;
+      1 -1  1;
+      0  1 -4];
+H = (-1) .* H;      % (-1) para pasar de maximizacion a minimizacion
+
+f = (-1).* [1 1 1]; % (-1) para pasar de maximizacion a minimizacion
+
+% Se definen las restricciones
+C = 1000000;
+A = [(-1).*eye(3); eye(3)];
+b = [0; 0; 0; C ; C; C];
+Aeq = [1 -1 1];
+beq = 0;
+
+% Se obtienen los alfas
+alfa92 = quadprog(H,f,A,b,Aeq,beq)
+\end{verbatim}
+\end{small}
+
+\begin{small}
+\begin{verbatim}
+alfa92 =
+
+    1.0000
+    2.0000
+    1.0000
+
+% x = quadprog(H,f,A,b,Aeq,beq) resuelve el siguiente problema:
+%
+%  min 1/2*x'*H*x + f'*x
+%
+%  sujeto a:   A*x <= b
+%            Aeq*x = beq
+\end{verbatim}
+\end{small}
+
+\end{document}
