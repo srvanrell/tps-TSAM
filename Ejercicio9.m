@@ -7,12 +7,12 @@
 % x = quadprog(H,f,A,b,Aeq,beq,lb,ub) solves the preceding problem subject to the additional restrictions lb ≤ x ≤ ub. lb and ub are vectors of doubles, and the restrictions hold for each x component. If no equalities exist, set Aeq = [] and beq = [].
 
 
-H = [1 0 1;
+H = [-1 0 -1;
      0 0 0;
-     1 0 1];
-H = (-1) .* (-0.5) .* H;
+     -1 0 -1];
+H = (-1) .* H; % porque es maximizacion
  
-f = (-1).* [1 1 1];
+f = (-1).* [1 1 1];  % porque es maximizacion
 
 A = (-1) .* eye(3);
 b = [0; 0; 0];
